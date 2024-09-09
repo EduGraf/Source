@@ -36,8 +36,6 @@ public abstract class Window
     // Display the rendering.
     public virtual void Show(Rendering rendering)
     {
-        // TODO: _handlers.Add(rendering);
-
         Rendering = rendering;
         OnLoad();
     }
