@@ -1,1 +1,1 @@
-Consult the documentation on [EduGraf](https://edugraf.info/).
+Consult the [documentation](https://edugraf.info/).
