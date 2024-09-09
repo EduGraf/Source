@@ -1,0 +1,1 @@
+﻿This is the generic OpenGL implementation. Refer to the website edugraf.info for more information.

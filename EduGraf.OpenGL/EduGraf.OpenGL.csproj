@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<Authors>Philipp Kramer</Authors>
+		<Product>EduGraf</Product>
+	</PropertyGroup>
+	<PropertyGroup>
+		<PackageReadmeFile>readme.md</PackageReadmeFile>
+		<PackageProjectUrl>https://edugraf.info/</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/EduGraf</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageLicenseExpression>LGPL-2.0-only</PackageLicenseExpression>
+		<Version>1.1.2</Version>
+		<Description>This is the generic OpenGL implementation of the educational graphics framework.</Description>
+	</PropertyGroup>
+	<ItemGroup>
+	  	<None Include="readme.md" Pack="True" PackagePath="\" />
+		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.5" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\EduGraf\EduGraf.csproj" />
+	</ItemGroup>
+</Project>
