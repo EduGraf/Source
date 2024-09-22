@@ -12,5 +12,5 @@ public class EmissiveTextureMaterial : TextureMaterial
     {
     }
 
-    public override Expression<Func<Color4>> Remission => () => Texture(TextureUv);
+    public override Expression<Func<Color4>> Remission => () => Texture(SurfaceTextureUv);
 }

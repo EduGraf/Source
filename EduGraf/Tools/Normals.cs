@@ -1,7 +1,7 @@
 ﻿using EduGraf.Tensors;
 using System;
 
-namespace EduGraf.ToolsAndShapes;
+namespace EduGraf.Tools;
 
 // Contains functions that help to compute normals and tangents.
 public static class Normals

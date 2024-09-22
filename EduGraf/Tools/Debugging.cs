@@ -1,6 +1,7 @@
-﻿using EduGraf.Tensors;
+﻿using EduGraf.Shapes;
+using EduGraf.Tensors;
 
-namespace EduGraf.ToolsAndShapes
+namespace EduGraf.Tools
 {
     // Help to debug incorrectly defined normals.
     public static class Debugging

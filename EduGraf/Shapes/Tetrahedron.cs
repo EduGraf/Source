@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace EduGraf.ToolsAndShapes;
+namespace EduGraf.Shapes;
 
 // Geometric representation of a tetrahedron by triangles indexing distinct vertices.
 public static class Tetrahedron

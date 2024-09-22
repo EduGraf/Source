@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace EduGraf.ToolsAndShapes;
+namespace EduGraf.Shapes;
 
 // Geometric representation of a circle by triangles indexing distinct vertices.
 public static class Circle

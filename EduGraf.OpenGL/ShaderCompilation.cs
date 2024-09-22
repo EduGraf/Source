@@ -12,7 +12,13 @@ namespace EduGraf.OpenGL;
 
 internal static class ShaderCompilation
 {
-    private const string TextureUv = "TextureUv";
+    private const string InPosition = "Position";
+    private const string InNormal = "Normal";
+    private const string InTextureUv = "TextureUv";
+    private const string TransferNormal = "VertexNormal";
+    private const string ShaderPosition = "SurfacePosition";
+    private const string ShaderNormal = "SurfaceNormal";
+    private const string ShaderTextureUv = "SurfaceTextureUv";
 
     private static readonly Type[] VectorTypes = {
         typeof(Vector2),
@@ -82,24 +88,24 @@ internal static class ShaderCompilation
         var vertexShader = new StringBuilder();
         vertexShader.AppendLine("#version 410");
 
-        vertexShader.AppendLine("in vec3 Position;");
-        if (withNormals) vertexShader.AppendLine("in vec3 Normal;");
-        if (withTextures) vertexShader.AppendLine("in vec2 TextureUv;");
+        vertexShader.AppendLine($"in vec3 {InPosition};");
+        if (withNormals) vertexShader.AppendLine($"in vec3 {InNormal};");
+        if (withTextures) vertexShader.AppendLine($"in vec2 {InTextureUv};");
 
         vertexShader.AppendLine("uniform mat4 Model;");
         vertexShader.AppendLine("uniform mat4 View;");
         vertexShader.AppendLine("uniform mat4 Projection;");
 
-        vertexShader.AppendLine("out vec3 SurfacePosition;");
-        if (withNormals) vertexShader.AppendLine("out vec3 normal;");
-        if (withTextures) vertexShader.AppendLine($"out vec2 {TextureUv};");
+        vertexShader.AppendLine($"out vec3 {ShaderPosition};");
+        if (withNormals) vertexShader.AppendLine($"out vec3 {TransferNormal};");
+        if (withTextures) vertexShader.AppendLine($"out vec2 {ShaderTextureUv};");
 
         vertexShader.AppendLine("void main(void) {");
-        vertexShader.AppendLine("  vec4 worldPosition = vec4(Position, 1.0) * Model;");
+        vertexShader.AppendLine($"  vec4 worldPosition = vec4({InPosition}, 1.0) * Model;");
         vertexShader.AppendLine("  gl_Position = worldPosition * View * Projection;");
-        vertexShader.AppendLine("  SurfacePosition = vec3(worldPosition);");
-        if (withNormals) vertexShader.AppendLine("  normal = Normal * mat3(Model);");
-        if (withTextures) vertexShader.AppendLine($"  {TextureUv} = TextureUv;");
+        vertexShader.AppendLine($"  {ShaderPosition} = vec3(worldPosition);");
+        if (withNormals) vertexShader.AppendLine($"  {TransferNormal} = {InNormal} * mat3(Model);");
+        if (withTextures) vertexShader.AppendLine($"  {ShaderTextureUv} = {InTextureUv};");
         vertexShader.AppendLine("}");
 
         return vertexShader.ToString();
@@ -113,12 +119,12 @@ internal static class ShaderCompilation
         AddDataTypes(lights, fragShader);
         AddDataTypes(materials, fragShader);
 
-        fragShader.AppendLine("in vec3 SurfacePosition;");
-        if (withNormals) fragShader.AppendLine("in vec3 normal;");
+        fragShader.AppendLine($"in vec3 {ShaderPosition};");
+        if (withNormals) fragShader.AppendLine($"in vec3 {TransferNormal};");
 
         if (withTextures)
         {
-            fragShader.AppendLine($"in vec2 {TextureUv};");
+            fragShader.AppendLine($"in vec2 {ShaderTextureUv};");
         }
 
         var localDeclarations = new HashSet<string>();
@@ -148,7 +154,7 @@ internal static class ShaderCompilation
             fragShader.AppendLine(local);
         }
 
-        if (withNormals) fragShader.AppendLine("  vec3 SurfaceNormal = normalize(normal);");
+        if (withNormals) fragShader.AppendLine($"  vec3 {ShaderNormal} = normalize({TransferNormal});");
         fragShader.AppendLine("  const vec4 white4 = vec4(1,1,1,1);");
         fragShader.AppendLine("  fragment = vec4(0,0,0,0);");
 
@@ -223,7 +229,7 @@ internal static class ShaderCompilation
             case MemberExpression memberExpr:
                 var member = memberExpr.Member;
                 string name = member.Name;
-                return name == "SurfaceNormal" // or TextureUv
+                return name is ShaderNormal or ShaderTextureUv
                        && memberExpr.Expression is ConstantExpression ce
                        && ce.Value == @this
                        || RequiresNormals(@this, memberExpr.Expression);
@@ -331,7 +337,7 @@ internal static class ShaderCompilation
                 {
                     var member = memberExpr.Member;
                     string name = member.Name;
-                    if (name is "SurfacePosition" or "SurfaceNormal" or TextureUv
+                    if (name is ShaderPosition or ShaderNormal or ShaderTextureUv
                         && memberExpr.Expression is ConstantExpression ce
                         && ce.Value == @this
                         || member.GetCustomAttribute<CalcAttribute>() != default)

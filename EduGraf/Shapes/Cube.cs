@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace EduGraf.ToolsAndShapes;
+namespace EduGraf.Shapes;
 
 // Geometric representation of a cube by triangles indexing distinct vertices.
 public static class Cube

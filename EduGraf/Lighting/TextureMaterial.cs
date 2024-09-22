@@ -15,7 +15,7 @@ public abstract class TextureMaterial : Material
     }
 
     // the texture coordinates.
-    protected Vector2 TextureUv => throw new NotSupportedException("not callable");
+    protected Vector2 SurfaceTextureUv => throw new NotSupportedException("not callable");
 
     // Get the color at the given coordinates.
     protected Color4 Texture(Vector2 uv) => throw new NotSupportedException("not callable");

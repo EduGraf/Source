@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace EduGraf.ToolsAndShapes;
+namespace EduGraf.Shapes;
 
 // Geometric representation of a sphere by triangles indexing distinct vertices.
-public class Sphere
+public static class Sphere
 {
     // Return a triangulation that corresponds to the usual sub-division of a globe.
     public static float[] GetPositions(int longitudeCount, int latitudeCount)

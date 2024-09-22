@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace EduGraf.ToolsAndShapes;
+namespace EduGraf.Shapes;
 
 // Geometric representation of a rectangular surface patch as a function of (x, z) by triangles indexing distinct vertices.
 public static class Patch
