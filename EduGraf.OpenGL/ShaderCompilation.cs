@@ -229,7 +229,7 @@ internal static class ShaderCompilation
             case MemberExpression memberExpr:
                 var member = memberExpr.Member;
                 string name = member.Name;
-                return name is ShaderNormal or ShaderTextureUv
+                return name is ShaderNormal
                        && memberExpr.Expression is ConstantExpression ce
                        && ce.Value == @this
                        || RequiresNormals(@this, memberExpr.Expression);
