@@ -76,14 +76,14 @@ public class Camera
         Point3 topLeft,
         Point3 topRight,
         Point3 bottomLeft,
-        Point3 bottomRight
-        ) GetProjectionPlane(float aspect /* the relation of projection width over height. */)
+        Point3 bottomRight) 
+        GetProjectionPlane(float aspect /* the relation of projection width over height. */)
     {
-        var unitY = Space.Unit3Y;
-        var lookAt = View.LookOut;
-        var up = Vector3.Normalize(unitY - Vector3.Dot(unitY, lookAt) * lookAt);
-        var right = Vector3.Cross(lookAt, up);
-        var center = View.Position + lookAt;
+        var unitY = Vector3.UnitY;
+        var lookOut = View.LookOut;
+        var up = Vector3.Normalize(unitY - unitY * lookOut * lookOut);
+        var right = Vector3.Cross(lookOut, up);
+        var center = View.Position + lookOut;
         float halfWidth = aspect * HalfProjectionHeight;
 
         var tl = center + HalfProjectionHeight * up - halfWidth * right;

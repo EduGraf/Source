@@ -3,22 +3,14 @@
 namespace EduGraf.Tensors;
 
 // This represents a displacement in 4d-space, i.e. homogeneous coordinates.
-public class Vector4 : Coordinate4
+public class Vector4(float x, float y, float z, float w)
+    : Coordinate4(x, y, z, w)
 {
-    public Vector4(float x, float y, float z, float w)
-        : base(x, y, z, w)
-    {
-    }
-
-    // Get the coordinate-value by index.
-    public float this[int index] => index switch
-    {
-        0 => X,
-        1 => Y,
-        2 => Z,
-        3 => W,
-        _ => throw new ArgumentOutOfRangeException(nameof(index))
-    };
+    public static readonly Vector4 Zero = new(0, 0, 0, 0);
+    public static readonly Vector4 UnitX = new(1, 0, 0, 0);
+    public static readonly Vector4 UnitY = new(0, 1, 0, 0);
+    public static readonly Vector4 UnitZ = new(0, 0, 1, 0);
+    public static readonly Vector4 UnitW = new(0, 0, 0, 1);
 
     // Get this vector without the homogeneous coordinate.
     public Vector3 Xyz => new(X, Y, Z);

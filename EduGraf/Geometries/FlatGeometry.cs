@@ -1,13 +1,9 @@
 ﻿namespace EduGraf.Geometries;
 
-internal class FlatGeometry : IGeometry
+internal class FlatGeometry(float[] position) : IGeometry
 {
     [Dimension(2)]
-    public float[] Position { get; }
-    public int Count => Position.Length / 2;
+    public float[] Position { get; } = position;
 
-    public FlatGeometry(float[] position)
-    {
-        Position = position;
-    }
+    public int Count => Position.Length / 2;
 }

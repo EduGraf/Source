@@ -1,13 +1,8 @@
 ﻿namespace EduGraf.Geometries;
 
-internal class TexturedTriangleNormalGeometry : TriangleNormalGeometry, IUvMapping
+internal class TexturedTriangleNormalGeometry(float[] position, float[] normals, uint[] triangles, float[] textureUvs)
+    : TriangleNormalGeometry(position, normals, triangles), IUvMapping
 {
     [Dimension(2)]
-    public float[] TextureUv { get; }
-
-    public TexturedTriangleNormalGeometry(float[] position, float[] normals, uint[] triangles, float[] textureUvs)
-        : base(position, normals, triangles)
-    {
-        TextureUv = textureUvs;
-    }
+    public float[] TextureUv { get; } = textureUvs;
 }

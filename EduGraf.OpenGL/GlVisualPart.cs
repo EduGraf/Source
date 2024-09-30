@@ -1,11 +1,6 @@
 ﻿namespace EduGraf.OpenGL;
 
-internal class GlVisualPart : VisualPart
+internal class GlVisualPart(string name, GlSurface surface) : VisualPart(name, surface)
 {
-    public GlVisualPart(string name, GlSurface surface)
-        : base(name, surface)
-    {
-    }
-
     public override void Render() => ((GlSurface)Surface).Draw();
 }

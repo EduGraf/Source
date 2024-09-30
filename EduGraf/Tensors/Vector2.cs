@@ -3,13 +3,12 @@
 namespace EduGraf.Tensors;
 
 // This represents a displacement in 2d-space.
-public class Vector2 : Coordinate2
+public class Vector2(float x, float y) : Coordinate2(x, y)
 {
+    public static readonly Vector2 Zero = new(0, 0);
+    public static readonly Vector2 UnitX = new(1, 0);
+    public static readonly Vector2 UnitY = new(0, 1);
 
-    public Vector2(float x, float y)
-        : base(x, y)
-    {
-    }
 
     // Return the euclidean length of this vector.
     public float Length() => MathF.Sqrt(Dot(this, this));

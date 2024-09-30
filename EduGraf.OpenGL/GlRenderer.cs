@@ -46,7 +46,7 @@ internal static class GlRenderer
 
                     visual.Render();
 
-                    shading.Set("Model", true, Space.Identity4, false);
+                    shading.Set("Model", true, Matrix4.Identity, false);
                     shading.Reset("Model", false);
                 }
 

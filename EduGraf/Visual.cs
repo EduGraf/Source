@@ -27,7 +27,7 @@ public class Visual
     {
         Name = name;
         _children = new List<Visual>();
-        Transform = Space.Identity4;
+        Transform = Matrix4.Identity;
     }
 
     // Add a child visual to below this.
@@ -39,7 +39,7 @@ public class Visual
     // Scale all descendants in all axis directions by the same factor.
     public virtual Visual Scale(float factor /* in world units. */)
     {
-        Transform *= Space.Scale4(factor);
+        Transform *= Matrix4.Scale(factor);
         foreach (var child in _children) child.Scale(factor);
         return this;
     }
@@ -47,7 +47,7 @@ public class Visual
     // Scale descendants by varying factors in the different axis directions.
     public virtual Visual Scale(Vector3 factor /* in world units. */)
     {
-        Transform *= Space.Scale4(factor);
+        Transform *= Matrix4.Scale(factor);
         foreach (var child in _children) child.Scale(factor);
         return this;
     }
@@ -55,7 +55,7 @@ public class Visual
     // Translate descendants by a vector.
     public virtual Visual Translate(Vector3 direction /* in world units. */)
     {
-        Transform *= Space.Translation4(direction);
+        Transform *= Matrix4.Translation4(direction);
         foreach (var child in _children) child.Translate(direction);
         return this;
     }
@@ -63,7 +63,7 @@ public class Visual
     // Rotate descendants around the x axis.
     public virtual Visual RotateX(float angle /* in radians */)
     {
-        Transform *= Space.RotationX4(angle);
+        Transform *= Matrix4.RotationX(angle);
         foreach (var child in _children) child.RotateX(angle);
         return this;
     }
@@ -71,7 +71,7 @@ public class Visual
     // Rotate descendants around the y axis.
     public virtual Visual RotateY(float angle /* in radians */)
     {
-        Transform *= Space.RotationY4(angle);
+        Transform *= Matrix4.RotationY(angle);
         foreach (var child in _children) child.RotateY(angle);
         return this;
     }
@@ -79,7 +79,7 @@ public class Visual
     // Rotate descendants around the z axis.
     public virtual Visual RotateZ(float angle /* in radians */)
     {
-        Transform *= Space.RotationZ4(angle);
+        Transform *= Matrix4.RotationZ(angle);
         foreach (var child in _children) child.RotateZ(angle);
         return this;
     }

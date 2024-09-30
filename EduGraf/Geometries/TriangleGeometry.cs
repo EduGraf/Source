@@ -1,12 +1,7 @@
 ﻿namespace EduGraf.Geometries;
 
-internal class TriangleGeometry : GeometryBase, ITriangle32Mapping
+internal class TriangleGeometry(float[] position, uint[] triangles)
+    : GeometryBase(position), ITriangle32Mapping
 {
-    public uint[] Triangles { get; }
-
-    public TriangleGeometry(float[] position, uint[] triangles)
-        : base(position)
-    {
-        Triangles = triangles;
-    }
+    public uint[] Triangles { get; } = triangles;
 }

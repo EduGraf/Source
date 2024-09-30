@@ -4,35 +4,26 @@ using System;
 namespace EduGraf.OpenGL;
 
 // This is the OpenGL texture-handle implementation.
-public class GlTextureHandle : TextureHandle, IDisposable
+public class GlTextureHandle(GlApi api, uint handle) : TextureHandle, IDisposable
 {
-    private readonly GlApi _api;
-
     // id of the texture on the GPU
-    protected internal uint Handle { get; }
-
-    // Create a new handle for the texture.
-    public GlTextureHandle(GlApi api, uint handle)
-    {
-        _api = api;
-        Handle = handle;
-    }
+    protected internal uint Handle { get; } = handle;
 
     // Activates the texture on the selected unit.
     public void Activate(int unit)
     {
-        _api.ActiveTexture(GlTextureUnit.Texture0 + unit);
-        _api.BindTexture(GlTextureTarget.Texture2D, Handle);
+        api.ActiveTexture(GlTextureUnit.Texture0 + unit);
+        api.BindTexture(GlTextureTarget.Texture2D, Handle);
     }
 
     // Deactivates the texture.
     public void Deactivate()
     {
-        _api.ClearTexture();
+        api.ClearTexture();
     }
 
     public void Dispose()
     {
-        _api.Invoke(() => _api.DeleteTexture(Handle));
+        api.Invoke(() => api.DeleteTexture(Handle));
     }
 }

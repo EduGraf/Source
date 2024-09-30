@@ -5,12 +5,7 @@ using System.Linq.Expressions;
 namespace EduGraf.Lighting;
 
 // This represents a texture material that does not interact with light.
-public class EmissiveTextureMaterial : TextureMaterial
+public class EmissiveTextureMaterial(TextureHandle handle) : TextureMaterial(handle)
 {
-    public EmissiveTextureMaterial(TextureHandle handle)
-        : base(handle)
-    {
-    }
-
     public override Expression<Func<Color4>> Remission => () => Texture(SurfaceTextureUv);
 }

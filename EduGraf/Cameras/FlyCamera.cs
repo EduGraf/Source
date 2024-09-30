@@ -5,18 +5,14 @@ using System;
 namespace EduGraf.Cameras;
 
 // This camera can fly around in the scene like a little plane. Refer to the UI documentation about how to control it.
-public class FlyCamera : Camera
+// The camera is perspective by default.
+public class FlyCamera(View view, Projection? projection = default)
+    : Camera(view, projection ?? new PerspectiveProjection(0.1f, 100, MathF.PI / 4))
 {
     private const float FlySpeed = 1f / 10;
     private const float MoveSensitivity = 1 / 250f;
 
     private (float x, float y) _mousePosition = (float.NaN, float.NaN);
-
-    // Create a new camera.
-    public FlyCamera(View view, Projection? projection = default)
-        : base(view, projection ?? new PerspectiveProjection(0.1f, 100, MathF.PI / 4))
-    {
-    }
 
     // Hande the input event. Pass this to the window inorder to receive the events.
     public override void Handle(InputEvent e)
@@ -59,14 +55,14 @@ public class FlyCamera : Camera
                 case ConsoleKey.NumPad8:
                 case ConsoleKey.UpArrow:
                 case ConsoleKey.W:
-                    View.Position += FlySpeed * Space.Unit3Y;
+                    View.Position += FlySpeed * Vector3.UnitY;
                     break;
 
                 case ConsoleKey.D2:
                 case ConsoleKey.NumPad2:
                 case ConsoleKey.DownArrow:
                 case ConsoleKey.S:
-                    View.Position -= FlySpeed * Space.Unit3Y;
+                    View.Position -= FlySpeed * Vector3.UnitY;
                     break;
             }
         }
@@ -92,6 +88,6 @@ public class FlyCamera : Camera
 
     private Vector3 GetHorizontalDelta()
     {
-        return Vector3.Normalize(FlySpeed * Vector3.Cross(View.LookOut, Space.Unit3Y));
+        return Vector3.Normalize(FlySpeed * Vector3.Cross(View.LookOut, Vector3.UnitY));
     }
 }

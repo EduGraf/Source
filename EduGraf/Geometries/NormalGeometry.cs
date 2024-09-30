@@ -1,13 +1,8 @@
 ﻿namespace EduGraf.Geometries;
 
-internal class NormalGeometry : GeometryBase, INormalMapping
+internal class NormalGeometry(float[] position, float[] normals)
+    : GeometryBase(position), INormalMapping
 {
     [Dimension(3)]
-    public float[] Normal { get; }
-
-    public NormalGeometry(float[] position, float[] normals)
-        : base(position)
-    {
-        Normal = normals;
-    }
+    public float[] Normal { get; } = normals;
 }

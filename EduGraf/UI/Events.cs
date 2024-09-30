@@ -13,67 +13,41 @@ public enum Pressing
 public abstract class InputEvent {}
 
 // This is the concrete class for key events.
-public class KeyInputEvent : InputEvent
+public class KeyInputEvent(Pressing pressing, ConsoleKey key) : InputEvent
 {
     // if the key is going down or up.
-    public Pressing Pressing { get; }
+    public Pressing Pressing { get; } = pressing;
 
     // that was pressed.
-    public ConsoleKey Key { get; }
- 
-    // Create a new event.
-    public KeyInputEvent(Pressing pressing, ConsoleKey key)
-    {
-        Pressing = pressing;
-        Key = key;
-    }
+    public ConsoleKey Key { get; } = key;
 }
 
 // This is the concrete class for mouse button events.
-public class MouseButtonEvent : InputEvent
+public class MouseButtonEvent(Pressing pressing, MouseButton button) : InputEvent
 {
     // if the button is going down or up.
-    public Pressing Pressing { get; }
+    public Pressing Pressing { get; } = pressing;
 
     // that was pressed.
-    public MouseButton Button { get; }
-
-    // Create a new event.
-    public MouseButtonEvent(Pressing pressing, MouseButton button) 
-    {
-        Pressing = pressing;
-        Button = button;
-    }
+    public MouseButton Button { get; } = button;
 }
 
 // This is the concrete class for mouse move events.
-public class MouseMoveEvent : InputEvent
+public class MouseMoveEvent(float x, float y) : InputEvent
 {
     // absolute position in pixels.
-    public float X { get; }
-    // absolute position in pixels.
-    public float Y { get; }  
+    public float X { get; } = x;
 
-    // Create a new event.
-    public MouseMoveEvent(float x, float y) 
-    {
-        X = x;
-        Y = y;
-    }
+    // absolute position in pixels.
+    public float Y { get; } = y;
 }
 
 // This is the concrete class for mouse scroll events.
-public class MouseScrollEvent : InputEvent
+public class MouseScrollEvent(float deltaX, float deltaY) : InputEvent
 {
     // relative position in pixels.
-    public float DeltaX { get; }
-    // relative position in pixels.
-    public float DeltaY { get; }
+    public float DeltaX { get; } = deltaX;
 
-    // Create a new event.
-    public MouseScrollEvent(float deltaX, float deltaY)
-    {
-        DeltaX = deltaX;
-        DeltaY = deltaY;
-    }
+    // relative position in pixels.
+    public float DeltaY { get; } = deltaY;
 }

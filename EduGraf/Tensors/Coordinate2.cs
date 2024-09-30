@@ -18,6 +18,14 @@ public abstract class Coordinate2 : Tensor, IEquatable<Coordinate2>
         Y = y;
     }
 
+    // Get the coordinate-value by index.
+    public float this[int index] => index switch
+    {
+        0 => X,
+        1 => Y,
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
+    };
+
     public bool Equals(Coordinate2? other)
     {
         if (ReferenceEquals(null, other)) return false;

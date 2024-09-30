@@ -2,16 +2,9 @@
 
 namespace EduGraf.OpenGL;
 
-internal struct GlAttribute
+internal struct GlAttribute(string name, int? dimensionality, Array values)
 {
-    public string Name { get; set; }
-    public int? Dimensionality { get; set; }
-    public Array Values { get; set; }
-
-    public GlAttribute(string name, int? dimensionality, Array values)
-    {
-        Name = name;
-        Dimensionality = dimensionality;
-        Values = values;
-    }
+    public string Name { get; set; } = name;
+    public int? Dimensionality { get; set; } = dimensionality;
+    public Array Values { get; set; } = values;
 }

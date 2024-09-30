@@ -32,7 +32,13 @@ internal static class ShaderCompilation
             typeof(Color3),
             typeof(Color4),
             typeof(Point2),
-            typeof(Point3)
+            typeof(Point3),
+            typeof(Vector2),
+            typeof(Vector3),
+            typeof(Vector4),
+            typeof(Matrix2),
+            typeof(Matrix4)
+
         })
         .ToArray();
 
@@ -299,8 +305,14 @@ internal static class ShaderCompilation
         {
             case BinaryExpression binary:
                 {
+                    var isDotProduct = binary.NodeType == ExpressionType.Multiply && 
+                            binary.Left.Type == typeof(Vector3) &&
+                            binary.Right.Type == typeof(Vector3);
+                    if (isDotProduct) shader.Append("dot");
+
                     shader.Append('(');
                     CrossCompile(@this, index, binary.Left, shader);
+
                     if (binary.NodeType == ExpressionType.Call)
                     {
                         var method = binary.Method!;
@@ -309,10 +321,9 @@ internal static class ShaderCompilation
                             : throw new NotSupportedException(expression.ToString());
                         shader.Append($" {op} ");
                     }
-                    else
-                    {
-                        shader.Append($" {GetOp(binary)} ");
-                    }
+                    else if (isDotProduct) shader.Append($", ");
+                    else shader.Append($" {GetOp(binary)} ");
+
                     CrossCompile(@this, index, binary.Right, shader);
                     shader.Append(')');
                     return;
@@ -349,9 +360,9 @@ internal static class ShaderCompilation
                         CrossCompile(@this, index, memberExpr.Expression!, shader);
                         shader.Append(".xyz");
                     }
-                    else if (member.DeclaringType == typeof(Space))
+                    else if (member.DeclaringType!.IsAssignableTo(typeof(Tensor)))
                     {
-                        var tensor = (Tensor)typeof(Space).GetField(member.Name)!.GetValue(default)!;
+                        var tensor = (Tensor)member.DeclaringType.GetField(member.Name)!.GetValue(default)!;
                         shader.Append($"{GlSlType(tensor.GetType())}({string.Join(',', tensor.Elements)})");
                     }
                     else

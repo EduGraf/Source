@@ -13,14 +13,9 @@ using System.Linq;
 namespace EduGraf.OpenGL;
 
 // This is the generic OpenGL implementation of the Graphic abstraction.
-public abstract class GlGraphic : Graphic
+public abstract class GlGraphic(GlApi api) : Graphic
 {
-    internal GlApi Api { get; }
-
-    protected GlGraphic(GlApi api)
-    {
-        Api = api;
-    }
+    internal GlApi Api { get; } = api;
 
     // Refer to the documentation of the class Graphic.
     public override Shading CreateShading(Light[] lights, Material[] materials, Camera? camera = default)

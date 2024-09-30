@@ -1,8 +1,20 @@
-﻿namespace EduGraf.Tensors;
+﻿using System;
+
+namespace EduGraf.Tensors;
 
 // This represents a matrix in 2d space.
 public class Matrix2 : Tensor
 {
+    // Create a new 2d rotation matrix.
+    public static Matrix2 Rotation(float angle /* in radians */)
+    {
+        float cos = MathF.Cos(angle);
+        float sin = MathF.Sin(angle);
+        return new Matrix2(
+            cos, sin,
+            -sin, cos);
+    }
+
     public Matrix2(float e00, float e01, float e10, float e11)
         : base(e00, e01, e10, e11)
     {

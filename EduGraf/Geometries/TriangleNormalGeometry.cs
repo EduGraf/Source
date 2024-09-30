@@ -1,13 +1,8 @@
 ﻿namespace EduGraf.Geometries;
 
-internal class TriangleNormalGeometry : TriangleGeometry, INormalMapping
+internal class TriangleNormalGeometry(float[] position, float[] normals, uint[] triangles)
+    : TriangleGeometry(position, triangles), INormalMapping
 {
     [Dimension(3)]
-    public float[] Normal { get; }
-
-    public TriangleNormalGeometry(float[] position, float[] normals, uint[] triangles)
-        : base(position, triangles)
-    {
-        Normal = normals;
-    }
+    public float[] Normal { get; } = normals;
 }

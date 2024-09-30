@@ -1,13 +1,8 @@
 ﻿namespace EduGraf.Geometries;
 
-internal class TexturedGeometry : GeometryBase, IUvMapping
+internal class TexturedGeometry(float[] position, float[] textureUvs)
+    : GeometryBase(position), IUvMapping
 {
     [Dimension(2)]
-    public float[] TextureUv { get; }
-
-    public TexturedGeometry(float[] position, float[] textureUvs)
-        : base(position)
-    {
-        TextureUv = textureUvs;
-    }
+    public float[] TextureUv { get; } = textureUvs;
 }

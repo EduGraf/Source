@@ -3,36 +3,23 @@
 namespace EduGraf.Cameras;
 
 // This is the abstraction for all projections. It is a mere collection of properties.
-public abstract class Projection
+public abstract class Projection(float near, float far)
 {
     // distance of the view-frustum plane
-    public float Near { get; }
+    public float Near { get; } = near;
 
     // distance of the view-frustum plane
-    public float Far { get; }
-
-    protected Projection(float near, float far)
-    {
-        Near = near;
-        Far = far;
-    }
+    public float Far { get; } = far;
 
     // Return the projection matrix.
     public abstract Matrix4 GetMatrix(float aspect);
 }
 
-// Ditto.
-public class PerspectiveProjection : Projection
+// Represents a centered perspective projection.
+public class PerspectiveProjection(float near, float far, float fovY) : Projection(near, far)
 {
     // the field of view y angle in radians.
-    public float FovY { get; }
-
-    // Create a new perspective projection.
-    public PerspectiveProjection(float near, float far, float fovY)
-        : base(near, far)
-    {
-        FovY = fovY;
-    }
+    public float FovY { get; } = fovY;
 
     // Ditto.
     public override Matrix4 GetMatrix(float aspect /* projection plane width divided by height */)
@@ -41,50 +28,36 @@ public class PerspectiveProjection : Projection
     }
 }
 
-// Prototype.
-public class OffCenterPerspectiveProjection : Projection
+// Represents an off-center perspective projection.
+public class OffCenterPerspectiveProjection(float near, float far, bool toNear, Point3 center, Vector3 right, Vector3 up) : Projection(near, far)
 {
-    // -
-    public Vector3 Center { get; set; }
-    // -
-    public Vector3 PositiveX { get; set; }
-    // -
-    public Vector3 PositiveY { get; set; }
-    // -
-    public bool ToNear { get; }
-    // -
-    public Matrix4 View { get; set; }
+    // of the projection plane
+    public Point3 Center { get; } = center;
 
-    // -
-    public OffCenterPerspectiveProjection(float near, float far, Vector3 center, Vector3 positiveX, Vector3 positiveY, bool toNear, Matrix4 view)
-        : base(near, far)
-    {
-        Center = center;
-        PositiveX = positiveX;
-        PositiveY = positiveY;
-        ToNear = toNear;
-        View = view;
-    }
+    // point on the border of the plane
+    public Vector3 Right { get; } = right;
 
-    // -
+    // point on the border of the plane
+    public Vector3 Up { get; } = up;
+
+    // Project to near-plane if true, else to the far-plane
+    public bool ToNear { get; } = toNear;
+
+    // position
+    public Point3 Camera { private get; set; } = Point3.Origin;
+
+    // Ditto.
     public override Matrix4 GetMatrix(float aspect)
     {
-        return Matrix4.GetOffCenterProjection(Center, aspect * PositiveX, PositiveY, Near, Far, ToNear, View);
+        return Matrix4.GetOffCenterProjection(Camera, Center, Right, Up, Near, Far, ToNear);
     }
 }
 
-// Ditto.
-public class OrthographicProjection : Projection
+// Represents an orthographic projection.
+public class OrthographicProjection(float near, float far, float scale) : Projection(near, far)
 {
     // that is applied in the transformation to the projection plan.
-    public float Scale { get; set; }
-
-    // Create a new orthographic projection.
-    public OrthographicProjection(float near, float far, float scale)
-        : base(near, far)
-    {
-        Scale = scale;
-    }
+    public float Scale { get; set; } = scale;
 
     // Ditto.
     public override Matrix4 GetMatrix(float aspect)

@@ -11,6 +11,75 @@ public class Matrix4 : Tensor
         if (elements.Length != 16) throw new ArgumentOutOfRangeException(nameof(elements));
     }
 
+    public static readonly Matrix4 Identity = new(
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1
+    );
+
+    // Create a new transformation matrix scaling in all axis directions by the same factor.
+    public static Matrix4 Scale(float factor) => Scale(factor, factor, factor);
+
+    // Create a new transformation matrix scaling by varying factors in the different axis directions.
+    public static Matrix4 Scale(float x, float y, float z)
+    {
+        return new Matrix4(
+            x, 0, 0, 0,
+            0, y, 0, 0,
+            0, 0, z, 0,
+            0, 0, 0, 1);
+    }
+
+    // Create a new scaling matrix from a vector.
+    public static Matrix4 Scale(Vector3 factor) => Scale(factor.X, factor.Y, factor.Z);
+
+    // Create a new transformation matrix representing translation by a vector.
+    public static Matrix4 Translation4(Vector3 delta)
+    {
+        return new Matrix4(
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            delta.X, delta.Y, delta.Z, 1);
+    }
+
+    // Create a new transformation matrix representing rotation around the x axis.
+    public static Matrix4 RotationX(float angle /* in radians */)
+    {
+        float cos = MathF.Cos(angle);
+        float sin = MathF.Sin(angle);
+        return new Matrix4(
+            1, 0, 0, 0,
+            0, cos, sin, 0,
+            0, -sin, cos, 0,
+            0, 0, 0, 1);
+    }
+
+    // Create a new transformation matrix representing rotation around the y axis.
+    public static Matrix4 RotationY(float angle /* in radians */)
+    {
+        float cos = MathF.Cos(angle);
+        float sin = MathF.Sin(angle);
+        return new Matrix4(
+            cos, 0, -sin, 0,
+              0, 1, 0, 0,
+            sin, 0, cos, 0,
+              0, 0, 0, 1);
+    }
+
+    // Create a new transformation matrix representing rotation around the z axis.
+    public static Matrix4 RotationZ(float angle /* in radians */)
+    {
+        float cos = MathF.Cos(angle);
+        float sin = MathF.Sin(angle);
+        return new Matrix4(
+             cos, sin, 0, 0,
+            -sin, cos, 0, 0,
+               0, 0, 1, 0,
+               0, 0, 0, 1);
+    }
+
     public static Matrix4 operator *(Matrix4 l, Matrix4 r)
     {
         float[] result = new float[16];
@@ -108,29 +177,39 @@ public class Matrix4 : Tensor
         };
     }
 
+    public static Point3 GetProjectionCenter(Point3 camera, Point3 center, Vector3 right, Vector3 up)
+    {
+        var n = Vector3.Cross(right, up);
+        float s = (n * center.Vector - n * camera.Vector) / (n * n);
+        return camera + s * n;
+    }
+
     // Ditto.
     public static Matrix4 GetOffCenterProjection(
-        Vector3 center,
-        Vector3 positiveX,
-        Vector3 positiveY,
+        Point3 camera,
+        Point3 center,
+        Vector3 right,
+        Vector3 up,
         float near,
         float far,
-        bool toNear,
-        Matrix4 view)
+        bool toNear)
     {
-        var left = center - positiveX;
-        var right = center + positiveX;
-        var bot = center - positiveY;
-        var top = center + positiveY;
+        var projectionCenter = GetProjectionCenter(camera, center, right, up);
+        var delta = center - projectionCenter;
 
-        var view0 = view.GetRow3(0);
-        var view1 = view.GetRow3(1);
-        return GetOffCenterPerspectiveProjection(
-            Vector3.Dot(view0, left),   // (view * left).X
-            Vector3.Dot(view0, right),  // (view * right).X
-            Vector3.Dot(view1, bot),    // (view * bot).Y
-            Vector3.Dot(view1, top),    // (view * top).Y
-            near, far, toNear);
+        float r2 = right * right;
+        float ldh = delta * right / r2;
+        float halfWidth = MathF.Sqrt(r2);
+        float l = -halfWidth * (-1 + ldh);
+        float r = -halfWidth * (+1 + ldh);
+
+        float u2 = up * up;
+        float ldv = delta * up / u2;
+        float halfHeight = MathF.Sqrt(u2);
+        float b = halfHeight * (-1 + ldv);
+        float t = halfHeight * (+1 + ldv);
+
+        return GetOffCenterPerspectiveProjection(l, r, b, t, near, far, toNear);
     }
 
     // Ditto.
@@ -148,7 +227,7 @@ public class Matrix4 : Tensor
             [2, 1] = (top + bottom) / deltaY,
             [2, 2] = -(toNear ? far : near) / deltaZ, // remap z to [0,1] 
             [2, 3] = -1, // set w = -z 
-            [3, 2] = -2 * near * far / deltaZ // remap z [0,1] 
+            [3, 2] = -near * far / deltaZ // remap z [0,1] 
         };
     }
 

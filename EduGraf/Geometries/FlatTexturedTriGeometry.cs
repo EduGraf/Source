@@ -1,13 +1,8 @@
 ﻿namespace EduGraf.Geometries;
 
-internal class FlatTexturedTriGeometry : FlatTriGeometry, IUvMapping
+internal class FlatTexturedTriGeometry(float[] position, ushort[] triangles, float[] textureUv)
+    : FlatTriGeometry(position, triangles), IUvMapping
 {
     [Dimension(2)]
-    public float[] TextureUv { get; }
-
-    public FlatTexturedTriGeometry(float[] position, ushort[] triangles, float[] textureUv)
-        : base(position, triangles)
-    {
-        TextureUv = textureUv;
-    }
+    public float[] TextureUv { get; } = textureUv;
 }

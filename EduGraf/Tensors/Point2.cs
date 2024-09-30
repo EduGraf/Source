@@ -1,15 +1,12 @@
 ﻿namespace EduGraf.Tensors;
 
 // This represents an absolute position in 2d-space.
-public class Point2 : Coordinate2
+public class Point2(float x, float y) : Coordinate2(x, y)
 {
-    public Point2(float x, float y)
-        : base(x, y)
-    {
-    }
+    public static readonly Point2 Origin = new(0, 0);
 
     public Point2(Vector2 vector)
-        : base(vector.X, vector.Y)
+        : this(vector.X, vector.Y)
     {
     }
 

@@ -5,21 +5,15 @@ using System.Linq.Expressions;
 namespace EduGraf.Lighting;
 
 // This represents light that uniformly comes from a hemisphere.
-public class HemisphereLight : Light
+public class HemisphereLight(Color3 color, Vector3 sky) : Light
 {
     // of the light.
-    [Data] public Color3 Color { get; }
+    [Data] public Color3 Color { get; } = color;
 
     // the direction to the sky.
-    [Data] public Vector3 Sky { get; }
+    [Data] public Vector3 Sky { get; } = sky;
 
-    public HemisphereLight(Color3 color, Vector3 sky)
-    {
-        Sky = sky;
-        Color = color;
-    }
+    public override Expression<Func<Vector3>> Direction => () => Vector3.Zero;
 
-    public override Expression<Func<Vector3>> Direction => () => Space.Zero3;
-
-    public override Expression<Func<Color3>> Immission => () => (1 - MathF.Acos(Vector3.Dot(Sky, SurfaceNormal)) / MathF.PI) * Color;
+    public override Expression<Func<Color3>> Immission => () => (1 - MathF.Acos(Sky * SurfaceNormal) / MathF.PI) * Color;
 }

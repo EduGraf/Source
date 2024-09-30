@@ -5,24 +5,17 @@ using System;
 namespace EduGraf.Cameras;
 
 // This camera orbits around the given center on the given radius. Refer to the UI documentation about how to control it.
-public class OrbitCamera : Camera
+// Pass in its position and the center around which it orbits. The camera is perspective by default.
+public class OrbitCamera(Point3 position, Point3 center, Projection? projection = default)
+    : Camera(
+        new View(position, center - position, Vector3.UnitY),
+        projection ?? new PerspectiveProjection(0.1f, 100, MathF.PI / 4))
 {
-    private float _radius;
-    private Vector2 _mousePosition;
+    private float _radius = (center - position).Length();
+    private Vector2 _mousePosition = new(0, 0);
 
     // this camera looks at and orbits around.
-    public Point3 Center { get; private set; }
-
-    // Create a new camera.
-    public OrbitCamera(Point3 position /* where the camera is located */, Point3 center, Projection? projection = default /* by default perspective */)
-        : base(
-            new View(position, center - position, Space.Unit3Y), 
-            projection ?? new PerspectiveProjection(0.1f, 100, MathF.PI / 4))
-    {
-        _radius = (center - position).Length();
-        _mousePosition = new(0, 0);
-        Center = center;
-    }
+    public Point3 Center { get; private set; } = center;
 
     // Hande the input event. Pass this to the window inorder to receive the events.
     public override void Handle(InputEvent e)
@@ -69,9 +62,9 @@ public class OrbitCamera : Camera
                     break;
 
                 case MouseButton.Right:
-                    var lookAtX = Vector3.Cross(View.LookOut, Space.Unit3Y);
-                    var lookAtY = Vector3.Cross(View.LookOut, lookAtX);
-                    Center += moveSensitivity * (delta.X * lookAtX + delta.Y * lookAtY);
+                    var lookOutX = Vector3.Cross(View.LookOut, Vector3.UnitY);
+                    var lookOutY = Vector3.Cross(View.LookOut, lookOutX);
+                    Center += moveSensitivity * (delta.X * lookOutX + delta.Y * lookOutY);
                     break;
             }
 

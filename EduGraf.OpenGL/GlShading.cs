@@ -16,8 +16,8 @@ namespace EduGraf.OpenGL;
 public class GlShading : Shading
 {
     private readonly LightingBase[] _lighting;
-    private readonly Dictionary<string, Direction> _inputs;
-    private readonly Dictionary<string, ChannelNode> _netChannels;
+    private readonly Dictionary<string, Direction> _inputs = [];
+    private readonly Dictionary<string, ChannelNode> _netChannels = [];
     private readonly uint _handle;
     private readonly List<DeclarationNode> _declarations;
 
@@ -32,7 +32,7 @@ public class GlShading : Shading
         Camera? camera,
         string vertexShader,
         string fragShader)
-        : this(graphic, camera, vertexShader, fragShader, Array.Empty<LightingBase>(), Array.Empty<GlShadingAspect>())
+        : this(graphic, camera, vertexShader, fragShader, [], [])
     {
     }
 
@@ -42,7 +42,7 @@ public class GlShading : Shading
         string vertexShader,
         string fragShader,
         params GlShadingAspect[] aspects)
-        : this(graphic, camera, vertexShader, fragShader, Array.Empty<LightingBase>(), aspects)
+        : this(graphic, camera, vertexShader, fragShader, [], aspects)
     {
     }
 
@@ -57,8 +57,6 @@ public class GlShading : Shading
         : base(camera)
     {
         _lighting = lighting;
-        _inputs = new Dictionary<string, Direction>();
-        _netChannels = new Dictionary<string, ChannelNode>();
 
         Api = graphic.Api;
         Aspects = aspects;
@@ -175,7 +173,7 @@ public class GlShading : Shading
         }
     }
 
-    internal static void Set(GlShading shading, string name, bool transpose, Matrix4 matrix, bool assertExists = true)
+    internal static void Set(GlShading shading, string name, bool transpose, Matrix4 matrix)
     {
         shading.DoInContext(() => shading.Set(name, transpose, matrix));
     }

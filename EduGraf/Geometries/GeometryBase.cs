@@ -1,14 +1,9 @@
 ﻿namespace EduGraf.Geometries;
 
-internal class GeometryBase : IGeometry
+internal class GeometryBase(float[] position) : IGeometry
 {
     [Dimension(3)]
-    public float[] Position { get; }
+    public float[] Position { get; } = position;
 
     public int Count => Position.Length / 3;
-
-    public GeometryBase(float[] position)
-    {
-        Position = position;
-    }
 }

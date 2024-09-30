@@ -21,6 +21,15 @@ public abstract class Coordinate3 : Tensor, IEquatable<Coordinate3>
         Z = z;
     }
 
+    // Get the coordinate-value by index.
+    public float this[int index] => index switch
+    {
+        0 => X,
+        1 => Y,
+        2 => Z,
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
+    };
+
     public bool Equals(Coordinate3? other)
     {
         if (ReferenceEquals(null, other)) return false;

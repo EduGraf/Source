@@ -1,12 +1,7 @@
 ﻿namespace EduGraf.Geometries;
 
-internal class TriGeometry : GeometryBase, ITriangle16Mapping
+internal class TriGeometry(float[] position, ushort[] triangles)
+    : GeometryBase(position), ITriangle16Mapping
 {
-    public ushort[] Triangles { get; }
-
-    public TriGeometry(float[] position, ushort[] triangles)
-        : base(position)
-    {
-        Triangles = triangles;
-    }
+    public ushort[] Triangles { get; } = triangles;
 }
