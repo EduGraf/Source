@@ -4,24 +4,16 @@ using System;
 namespace EduGraf.Tensors;
 
 // This represents a color that can be sent to the GPU.
-public class Color3 : Tensor, IEquatable<Color3>
+public class Color3(float r, float g, float b) : Tensor(r, g, b), IColor, IEquatable<Color3>
 {
     // red in the range of 0..1.
-    [Data] public float R { get; }
+    [Data] public float R { get; } = r;
 
     // green in the range of 0..1.
-    [Data] public float G { get; }
+    [Data] public float G { get; } = g;
 
     // blue in the range of 0..1.
-    [Data] public float B { get; }
-
-    public Color3(float r, float g, float b)
-        : base(r, g, b)
-    {
-        R = r;
-        G = g;
-        B = b;
-    }
+    [Data] public float B { get; } = b;
 
     public static Color3 operator -(Color3 c) => new(-c.R, -c.G, -c.B);
 

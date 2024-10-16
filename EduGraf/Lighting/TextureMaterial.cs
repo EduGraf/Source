@@ -7,7 +7,8 @@ namespace EduGraf.Lighting;
 public abstract class TextureMaterial(TextureHandle handle) : Material
 {
     // reference to the texture.
-    [Data] public TextureHandle Handle { get; } = handle;
+    [Data]
+    public TextureHandle Handle { get; } = handle;
 
     // the texture coordinates.
     protected Vector2 SurfaceTextureUv => throw new NotSupportedException("not callable");

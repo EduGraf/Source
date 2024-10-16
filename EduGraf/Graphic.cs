@@ -1,5 +1,4 @@
-﻿using EduGraf.Cameras;
-using EduGraf.Geometries;
+﻿using EduGraf.Geometries;
 using EduGraf.Lighting;
 using EduGraf.UI;
 using SixLabors.ImageSharp;
@@ -18,7 +17,7 @@ public abstract class Graphic
     public abstract TextureHandle CreateTexture(Image<Rgba32> image);
 
     // Create a new shading, i.e. a particular look, from light- and material-properties.
-    public abstract Shading CreateShading(Light[] lights, Material[] materials, Camera? camera = default);
+    public abstract Shading CreateShading(string name, Light[] lights, Material[] materials);
 
     // Create a new surface with a particular shading and geometry.
     public abstract Surface CreateSurface(Shading shading, IGeometry geometry);

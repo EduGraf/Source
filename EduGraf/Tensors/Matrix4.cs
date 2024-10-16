@@ -35,7 +35,7 @@ public class Matrix4 : Tensor
     public static Matrix4 Scale(Vector3 factor) => Scale(factor.X, factor.Y, factor.Z);
 
     // Create a new transformation matrix representing translation by a vector.
-    public static Matrix4 Translation4(Vector3 delta)
+    public static Matrix4 Translation(Vector3 delta)
     {
         return new Matrix4(
             1, 0, 0, 0,

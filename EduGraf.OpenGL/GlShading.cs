@@ -1,5 +1,4 @@
-﻿using EduGraf.Cameras;
-using EduGraf.Lighting;
+﻿using EduGraf.Lighting;
 using EduGraf.OpenGL.Enums;
 using EduGraf.OpenGL.GlslParser;
 using EduGraf.OpenGL.GlslParser.Tree;
@@ -27,34 +26,36 @@ public class GlShading : Shading
     public GlApi Api { get; }
 
 
+    // Create a new shading.
     protected internal GlShading(
+        string name,
         GlGraphic graphic,
-        Camera? camera,
         string vertexShader,
         string fragShader)
-        : this(graphic, camera, vertexShader, fragShader, [], [])
-    {
-    }
-
-    protected internal GlShading(
-        GlGraphic graphic,
-        Camera? camera,
-        string vertexShader,
-        string fragShader,
-        params GlShadingAspect[] aspects)
-        : this(graphic, camera, vertexShader, fragShader, [], aspects)
+        : this(name, graphic, vertexShader, fragShader, [], [])
     {
     }
 
     // Create a new shading.
     protected internal GlShading(
+        string name,
         GlGraphic graphic,
-        Camera? camera,
+        string vertexShader,
+        string fragShader,
+        params GlShadingAspect[] aspects)
+        : this(name, graphic, vertexShader, fragShader, [], aspects)
+    {
+    }
+
+    // Create a new shading.
+    protected internal GlShading(
+        string name,
+        GlGraphic graphic,
         string vertexShader,
         string fragShader,
         LightingBase[] lighting,
         params GlShadingAspect[] aspects)
-        : base(camera)
+        : base(name)
     {
         _lighting = lighting;
 

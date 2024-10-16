@@ -1,5 +1,4 @@
-﻿using EduGraf.Cameras;
-using EduGraf.Lighting;
+﻿using EduGraf.Lighting;
 using EduGraf.Tensors;
 using System;
 using System.Collections.Generic;
@@ -58,7 +57,7 @@ internal static class ShaderCompilation
         throw new NotSupportedException($"undefined glsl type for dotnet type {type.Name}");
     }
 
-    internal static GlShading GetShading(GlGraphic graphic, Camera? camera, Light[] lights, Material[] materials)
+    internal static GlShading GetShading(string name, GlGraphic graphic, Light[] lights, Material[] materials)
     {
         int textureCount = materials
             .OfType<TextureMaterial>()
@@ -86,7 +85,7 @@ internal static class ShaderCompilation
 
         }
 
-        return new GlShading(graphic, camera, vertexShader, fragShader, lighting, aspects.ToArray());
+        return new GlShading(name, graphic, vertexShader, fragShader, lighting, aspects.ToArray());
     }
 
     private static string GetVertexShader(bool withNormals, bool withTextures)

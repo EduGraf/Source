@@ -18,9 +18,9 @@ public abstract class GlGraphic(GlApi api) : Graphic
     internal GlApi Api { get; } = api;
 
     // Refer to the documentation of the class Graphic.
-    public override Shading CreateShading(Light[] lights, Material[] materials, Camera? camera = default)
+    public override Shading CreateShading(string name, Light[] lights, Material[] materials)
     {
-        return ShaderCompilation.GetShading(this, camera, lights, materials);
+        return ShaderCompilation.GetShading(name, this, lights, materials);
     }
 
     // Refer to the documentation of the class Graphic.

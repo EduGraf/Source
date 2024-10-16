@@ -4,29 +4,21 @@ using System;
 namespace EduGraf.Tensors;
 
 // This represents a color with transparency that can be sent to the GPU.
-public class Color4 : Tensor, IEquatable<Color4>
+public class Color4(float r, float g, float b, float a) : Tensor(r, g, b, a), IColor, IEquatable<Color4>
 {
     // red in the range of 0..1.
-    [Data] public float R { get; }
+    [Data] public float R { get; } = r;
 
     // green in the range of 0..1.
-    [Data] public float G { get; }
+    [Data] public float G { get; } = g;
 
     // blue in the range of 0..1.
-    [Data] public float B { get; }
+    [Data] public float B { get; } = b;
 
     // transparency in the range of 0..1.
-    [Data] public float A { get; }
+    [Data] public float A { get; } = a;
 
-    public Color4(float r, float g, float b, float a)
-        : base(r, g, b, a)
-    {
-        R = r;
-        G = g;
-        B = b;
-        A = a;
-    }
-
+    // Creates a new instance.
     public Color4(Color3 c, float a)
         : this(c.R, c.G, c.B, a)
     {

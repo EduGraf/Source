@@ -24,6 +24,7 @@ public class GlTextureHandle(GlApi api, uint handle) : TextureHandle, IDisposabl
 
     public void Dispose()
     {
+        GC.SuppressFinalize(this);
         api.Invoke(() => api.DeleteTexture(Handle));
     }
 }

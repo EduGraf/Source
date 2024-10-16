@@ -103,13 +103,8 @@ public static class Sphere
         return triangles;
     }
 
-    // Return a triangulation consisting of equilateral triangles.
-    public static (float[] positions, ushort[] triangles) GetIso(int rings)
-    {
-        return (GetIsoPositions(rings), GetIsoTriangles(rings));
-    }
-
-    private static float[] GetIsoPositions(int rings)
+    // Return equilateral triangles.
+    public static float[] GetIsoPositions(int rings)
     {
         int length = 3 * FullIsoVerticesCount(rings);
         var positions = new float[length];
@@ -146,7 +141,8 @@ public static class Sphere
         }
     }
 
-    private static ushort[] GetIsoTriangles(int rings)
+    // Return a triangulation consisting of equilateral triangles.
+    public static ushort[] GetIsoTriangles(int rings)
     {
         var triangles = new List<ushort>();
         Circle.AddIsoTriangles(rings, triangles);

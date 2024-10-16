@@ -26,7 +26,7 @@ public class Visual
     internal Visual(string name /* not used by the framework. */)
     {
         Name = name;
-        _children = new List<Visual>();
+        _children = [];
         Transform = Matrix4.Identity;
     }
 
@@ -55,7 +55,7 @@ public class Visual
     // Translate descendants by a vector.
     public virtual Visual Translate(Vector3 direction /* in world units. */)
     {
-        Transform *= Matrix4.Translation4(direction);
+        Transform *= Matrix4.Translation(direction);
         foreach (var child in _children) child.Translate(direction);
         return this;
     }
