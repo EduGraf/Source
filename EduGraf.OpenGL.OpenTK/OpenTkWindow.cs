@@ -5,6 +5,7 @@ using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using System;
 using System.Collections.Generic;
+using EduGraf.Cameras;
 using EduGraf.UI;
 using MouseButton = EduGraf.UI.MouseButton;
 
@@ -134,9 +135,9 @@ public sealed class OpenTkWindow : UI.Window, IDisposable
         _window.MouseWheel += OnMouseScroll;
     }
 
-    public override void Show(Rendering rendering)
+    public override void Show(Rendering rendering, Camera? camera = default)
     {
-        base.Show(rendering);
+        base.Show(rendering, camera);
         _window.Run();
     }
 

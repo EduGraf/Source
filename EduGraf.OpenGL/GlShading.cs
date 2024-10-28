@@ -208,6 +208,13 @@ public class GlShading : Shading
     }
 
     // Pass value for name to the shader.
+    protected internal void Set(string name, bool value, bool @checked = true)
+    {
+        SetUniform(name, "bool", @checked);
+        Api.Uniform1(Api.GetUniformLocation(_handle, name), value ? 1 : 0);
+    }
+
+    // Pass value for name to the shader.
     protected internal void Set(string name, float value, bool @checked = true)
     {
         SetUniform(name, "float", @checked);
@@ -285,7 +292,6 @@ public class GlShading : Shading
         DoInContext(() =>
         {
             int lightsCount = 0;
-            int materialsCount = 0;
             foreach (var lighting in _lighting)
             {
                 SetUniformParameters(
@@ -293,22 +299,24 @@ public class GlShading : Shading
                     lighting switch
                     {
                         Light => lightsCount++,
-                        Material => materialsCount++,
+                        Material => null,
                         _ => throw new InvalidOperationException()
                     });
             }
         });
     }
 
-    private void SetUniformParameters(LightingBase lighting, int i)
+    private void SetUniformParameters(LightingBase lighting, int? i)
     {
-        var name = ShaderCompilation.SanitizeName(lighting.GetType().Name);
+        var name = ShaderCompilation.SanitizeName(lighting.GetType().Name, i);
 
         foreach (var property in ShaderCompilation.GetProperties<DataAttribute>(lighting))
         {
             var (fieldObj, fieldType) = GetValueType(lighting, property);
-            string fieldName = $"{name}{i}.{ShaderCompilation.SanitizeName(property.Name)}";
-            if (fieldType.IsAssignableTo(typeof(float))) Set(fieldName, (float)fieldObj);
+            string fieldName = $"{name}.{ShaderCompilation.SanitizeName(property.Name)}";
+            if (fieldType.IsAssignableTo(typeof(bool))) Set(fieldName, (bool)fieldObj);
+            else if (fieldType.IsAssignableTo(typeof(int))) Set(fieldName, (int)fieldObj);
+            else if (fieldType.IsAssignableTo(typeof(float))) Set(fieldName, (float)fieldObj);
             else if (fieldType.IsAssignableTo(typeof(Vector2))) Set(fieldName, (Vector2)fieldObj);
             else if (fieldType.IsAssignableTo(typeof(Vector3))) Set(fieldName, (Vector3)fieldObj);
             else if (fieldType.IsAssignableTo(typeof(Vector4))) Set(fieldName, (Vector4)fieldObj);

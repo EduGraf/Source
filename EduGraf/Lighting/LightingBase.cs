@@ -13,8 +13,17 @@ public abstract class LightingBase
     // the current surface normal.
     protected Vector3 SurfaceNormal => throw new NotSupportedException("not callable");
 
+    // when passed to Window.Show().
+    protected Point3 CameraPosition => throw new NotSupportedException("not callable");
+
     // refer to a calculated property.
     protected T ValueOf<T>(Expression<Func<T>> expression) => throw new NotSupportedException("not callable");
+
+    // refer to a calculated property.
+    protected T ValueOf<T>(Expression<Func<Material, T>> expression) => throw new NotSupportedException("not callable");
+
+    // get the length of a vector.
+    protected float LengthOf(Expression<Func<Vector3>> vector) => throw new NotSupportedException("not callable");
 
     // Create a new 2d vector.
     protected Vector2 VectorOf(float x, float y) => throw new NotSupportedException("not callable");
@@ -32,5 +41,8 @@ public abstract class LightingBase
     protected Color4 ColorOf(float r, float g, float b, float a) => throw new NotSupportedException("not callable");
 
     // Add transparency to a color.
-    protected Color4 ColorOf(Color3 col, float a) => throw new NotSupportedException("not callable");
+    protected Color4 ColorOf(Color3 color, float a) => throw new NotSupportedException("not callable");
+
+    // Blend colors additively.
+    protected Color3 Add(Color3 a, Color3 b) => throw new NotSupportedException("not callable");
 }

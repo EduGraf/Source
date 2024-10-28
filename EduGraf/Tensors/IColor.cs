@@ -1,3 +1,4 @@
 ﻿namespace EduGraf.Tensors;
 
-public interface IColor {}
+// Marker interface.
+public interface IColor;

@@ -10,7 +10,7 @@ internal static class GlRenderer
 {
     public static void Render(
         GlApi api,
-        Camera? omniCamera,
+        Camera? camera,
         IEnumerable<IGrouping<GlShading, Visual>> scene,
         int width, int height,
         Color3 background)
@@ -23,14 +23,13 @@ internal static class GlRenderer
         foreach (var group in scene)
         {
             var shading = group.Key;
-            var camera = omniCamera ?? shading.Camera;
             if (camera is not null)
             {
                 var projection = camera.Projection.GetMatrix((float)width / height);
                 shading.DoInContext(() =>
                 {
                     shading.Set("View", true, camera.View.GetViewMatrix());
-                    shading.Set("cameraPosition", camera.View.Position, false);
+                    shading.Set("CameraPosition", camera.View.Position, false);
                     shading.Set("Projection", true, projection);
                 });
             }

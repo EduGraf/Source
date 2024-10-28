@@ -18,9 +18,9 @@ public abstract class GlGraphic(GlApi api) : Graphic
     internal GlApi Api { get; } = api;
 
     // Refer to the documentation of the class Graphic.
-    public override Shading CreateShading(string name, Light[] lights, Material[] materials)
+    public override Shading CreateShading(string name, Material material, params Light[] lights)
     {
-        return ShaderCompilation.GetShading(name, this, lights, materials);
+        return ShaderCompilation.GetShading(name, this, material, lights);
     }
 
     // Refer to the documentation of the class Graphic.
@@ -42,10 +42,10 @@ public abstract class GlGraphic(GlApi api) : Graphic
     }
 
     // Refer to the documentation of the class Graphic.
-    public override void Render(Window window, Rendering rendering)
+    public override void Render(Window window, Rendering rendering, Camera? camera = default)
     {
         Api.ExecutePending();
-        GlRenderer.Render(Api, default, GetAllVisualsByShading(rendering.Scene), window.Width, window.Height, rendering.Background);
+        GlRenderer.Render(Api, camera, GetAllVisualsByShading(rendering.Scene), window.Width, window.Height, rendering.Background);
     }
 
     // Create a newn rgb-texture with pixel-type unsigned byte.

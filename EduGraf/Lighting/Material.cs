@@ -7,13 +7,12 @@ namespace EduGraf.Lighting;
 // This is the base class for all materials
 public abstract class Material : LightingBase
 {
-    // tells the rendering engine that the material is semi-transparent, by default it is assumed to be non-transparent.
-    public bool SemiTransparent { get; init; }
+    // of the material with 0 = fully smooth and 1 = fully rough
+    [Calc] public abstract Expression<Func<float>> Roughness { get; }
 
-    // the current light source.
-    public Light Light => throw new NotSupportedException("not callable");
+    // of the material with 0 = non-metal and 1 = metal
+    [Calc] public abstract Expression<Func<float>> Metalness { get; }
 
-    // The light that goes out as a reaction to incoming light.
-    // The reaction to each incoming light is calculated separately and added by the framework.
-    [Calc] public abstract Expression<Func<Color4>> Remission { get; }
+    // of the material
+    [Calc] public abstract Expression<Func<Color3>> Color { get; }
 }

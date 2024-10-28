@@ -1,5 +1,4 @@
-﻿using EduGraf.Cameras;
-using System;
+﻿using System;
 
 namespace EduGraf;
 
@@ -9,9 +8,6 @@ public abstract class Shading(string name) : IDisposable
 {
     // for debugging purposes
     public string Name { get; } = name;
-
-    // set if the shader requires infos about it
-    public Camera? Camera { get; set; }
 
     public abstract void Dispose();
 }

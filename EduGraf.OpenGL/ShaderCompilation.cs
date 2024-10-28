@@ -18,6 +18,7 @@ internal static class ShaderCompilation
     private const string ShaderPosition = "SurfacePosition";
     private const string ShaderNormal = "SurfaceNormal";
     private const string ShaderTextureUv = "SurfaceTextureUv";
+    private const string CameraPosition = "CameraPosition";
 
     private static readonly Type[] VectorTypes = {
         typeof(Vector2),
@@ -26,8 +27,7 @@ internal static class ShaderCompilation
     };
 
     private static readonly Type[] BuiltInTypes =
-        VectorTypes.Concat(new[]
-        {
+        VectorTypes.Concat([
             typeof(Color3),
             typeof(Color4),
             typeof(Point2),
@@ -36,13 +36,12 @@ internal static class ShaderCompilation
             typeof(Vector3),
             typeof(Vector4),
             typeof(Matrix2),
-            typeof(Matrix4)
-
-        })
+            typeof(Matrix4)])
         .ToArray();
 
     private static string GlSlType(Type type)
     {
+        if (type == typeof(bool)) return "bool";
         if (type == typeof(float)) return "float";
         if (type == typeof(Color3)) return "vec3";
         if (type == typeof(Color4)) return "vec4";
@@ -53,36 +52,25 @@ internal static class ShaderCompilation
         if (type == typeof(Point3)) return "vec3";
         if (type == typeof(TextureHandle)) return "sampler2D";
         if (type.IsAssignableTo(typeof(LightingBase))) return SanitizeName(type.Name);
-        if (type.IsAssignableTo(typeof(LambdaExpression))) return GlSlType(type.GetGenericArguments()[0].GetGenericArguments()[0]);
+        if (type.IsAssignableTo(typeof(LambdaExpression))) return GlSlType(type.GetGenericArguments()[0].GetGenericArguments().Last());
         throw new NotSupportedException($"undefined glsl type for dotnet type {type.Name}");
     }
 
-    internal static GlShading GetShading(string name, GlGraphic graphic, Light[] lights, Material[] materials)
+    internal static GlShading GetShading(string name, GlGraphic graphic, Material material, params Light[] lights)
     {
-        int textureCount = materials
-            .OfType<TextureMaterial>()
-            .Count();
-        bool withNormals = RequireNormals(lights.Cast<LightingBase>().Concat(materials));
-        bool withTextures = textureCount > 0;
-        string vertexShader = GetVertexShader(withNormals, withTextures);
-        string fragShader = GetFragShader(lights, materials, withNormals, withTextures);
         var lighting = lights
             .Cast<LightingBase>()
-            .Concat(materials)
+            .Concat([material])
             .ToArray();
-        var aspects = new List<GlShadingAspect> { new GlTransparentShadingAspect(materials.Any(m => m.SemiTransparent)) };
-
+        bool withNormals = RequireNormals(lighting);
+        bool withTextures = RequireTextures(material);
+        string fragShader = GetFragShader(lights, material, withNormals, withTextures);
+        string vertexShader = GetVertexShader(withNormals, withTextures);
+        var aspects = new List<GlShadingAspect>();
         if (withTextures)
         {
-            for (int i = 0; i < materials.Length; i++)
-            {
-                var material = materials[i];
-                if (material is TextureMaterial tm)
-                {
-                    aspects.Add(new GlNamedTextureShadingAspect($"{tm.GetType().Name}{i}.Handle", (GlTextureHandle)tm.Handle));
-                }
-            }
-
+            var tm = (ColorTextureMaterial) material;
+            aspects.Add(new GlNamedTextureShadingAspect($"{tm.GetType().Name}.Handle", (GlTextureHandle)tm.Handle));
         }
 
         return new GlShading(name, graphic, vertexShader, fragShader, lighting, aspects.ToArray());
@@ -116,62 +104,50 @@ internal static class ShaderCompilation
         return vertexShader.ToString();
     }
 
-    private static string GetFragShader(Light[] lights, Material[] materials, bool withNormals, bool withTextures)
+    private static string GetFragShader(Light[] lights, Material material, bool withNormals, bool withTextures)
     {
         var fragShader = new StringBuilder();
         fragShader.AppendLine("#version 410");
 
-        AddDataTypes(lights, fragShader);
-        AddDataTypes(materials, fragShader);
+        var lighting = lights
+            .OfType<LightingBase>()
+            .Concat([ material ]);
+        AddDataTypes(lighting, fragShader);
 
         fragShader.AppendLine($"in vec3 {ShaderPosition};");
         if (withNormals) fragShader.AppendLine($"in vec3 {TransferNormal};");
-
-        if (withTextures)
-        {
-            fragShader.AppendLine($"in vec2 {ShaderTextureUv};");
-        }
+        if (withTextures) fragShader.AppendLine($"in vec2 {ShaderTextureUv};");
+        fragShader.AppendLine($"uniform vec3 {CameraPosition};");
 
         var localDeclarations = new HashSet<string>();
         for (int i = 0; i < lights.Length; i++)
         {
             var light = lights[i];
-            var name = SanitizeName(light.GetType().Name);
-            fragShader.AppendLine($"uniform {name} {name}{i};");
-
+            var lightName = light.GetType().Name;
+            fragShader.AppendLine($"uniform {SanitizeName(lightName)} {SanitizeName(lightName, i)};");
             UpdateLocals(light, localDeclarations);
         }
 
-        for (int i = 0; i < materials.Length; i++)
-        {
-            var material = materials[i];
-            var name = SanitizeName(material.GetType().Name);
-            fragShader.AppendLine($"uniform {name} {name}{i};");
+        var materialName = material.GetType().Name;
+        fragShader.AppendLine($"uniform {SanitizeName(materialName)} {SanitizeName(materialName, default)};");
 
-            UpdateLocals(material, localDeclarations);
-        }
+        UpdateLocals(material, localDeclarations);
 
-        fragShader.AppendLine("out vec4 fragment;");
+        fragShader.AppendLine("out vec3 fragment;");
         fragShader.AppendLine("void main() {");
 
-        foreach (var local in localDeclarations)
-        {
-            fragShader.AppendLine(local);
-        }
+        foreach (var local in localDeclarations) fragShader.AppendLine(local);
 
         if (withNormals) fragShader.AppendLine($"  vec3 {ShaderNormal} = normalize({TransferNormal});");
-        fragShader.AppendLine("  const vec4 white4 = vec4(1,1,1,1);");
-        fragShader.AppendLine("  fragment = vec4(0,0,0,0);");
+        fragShader.AppendLine("  const vec3 white3 = vec3(1, 1, 1);");
+        fragShader.AppendLine("  fragment = vec3(0, 0, 0);");
+
+        CrossCompileProperties(material, default, fragShader);
 
         for (int i = 0; i < lights.Length; i++)
         {
             CrossCompileProperties(lights[i], i, fragShader);
-            RemissionFromMaterials(materials, fragShader);
-        }
-
-        if (lights.Length == 0)
-        {
-            RemissionFromMaterials(materials, fragShader);
+            fragShader.AppendLine($"  fragment = white3 - (white3 - fragment) * (white3 - {nameof(Light.Remission)});");
         }
 
         fragShader.AppendLine("}");
@@ -199,14 +175,20 @@ internal static class ShaderCompilation
         }
     }
 
-    private static bool RequireNormals(IEnumerable<LightingBase> lightings)
+    private static bool RequireTextures(Material material)
     {
-        foreach (var lighting in lightings)
+        return GetProperties<DataAttribute>(material)
+            .Any(p => p.PropertyType.IsAssignableTo(typeof(TextureHandle)));
+    }
+
+    private static bool RequireNormals(IEnumerable<LightingBase> lighting)
+    {
+        foreach (var l in lighting)
         {
-            foreach (var property in GetProperties<CalcAttribute>(lighting))
+            foreach (var property in GetProperties<CalcAttribute>(l))
             {
-                var expression = (LambdaExpression?)property.GetValue(lighting);
-                if (RequiresNormals(lighting, expression)) return true;
+                var expression = (LambdaExpression?)property.GetValue(l);
+                if (RequiresNormals(l, expression)) return true;
             }
         }
 
@@ -246,7 +228,7 @@ internal static class ShaderCompilation
                 return methodCall.Arguments.Any(argument => RequiresNormals(@this, argument));
 
             case ParameterExpression:
-                throw new NotSupportedException("lambdas with parameters are not supported");
+                return false;
 
             case UnaryExpression unary:
                 return RequiresNormals(@this, unary.Operand);
@@ -263,29 +245,15 @@ internal static class ShaderCompilation
     }
 
 
-
     private static void UpdateLocals(LightingBase lighting, HashSet<string> locals)
     {
         foreach (var property in GetProperties<CalcAttribute>(lighting))
         {
-            var name = property.Name;
-            if (name != nameof(Material.Light))
-            {
-                locals.Add($"  {GlSlType(property.PropertyType)} {name};");
-            }
+            locals.Add($"  {GlSlType(property.PropertyType)} {property.Name};");
         }
     }
 
-    private static void RemissionFromMaterials(Material[] materials, StringBuilder fragShader)
-    {
-        for (int i = 0; i < materials.Length; i++)
-        {
-            CrossCompileProperties(materials[i], i, fragShader);
-            fragShader.AppendLine($"  fragment = white4 - (white4 - fragment) * (white4 - {nameof(Material.Remission)});");
-        }
-    }
-
-    private static void CrossCompileProperties(LightingBase lighting, int index, StringBuilder fragShader)
+    private static void CrossCompileProperties(LightingBase lighting, int? index, StringBuilder fragShader)
     {
         foreach (var property in GetProperties<CalcAttribute>(lighting))
         {
@@ -298,7 +266,7 @@ internal static class ShaderCompilation
         }
     }
 
-    private static void CrossCompile(object @this, int index, Expression? expression, StringBuilder shader)
+    private static void CrossCompile(object @this, int? index, Expression? expression, StringBuilder shader)
     {
         switch (expression)
         {
@@ -339,7 +307,8 @@ internal static class ShaderCompilation
                 return;
 
             case ConstantExpression constant:
-                if (constant.Value == @this) shader.Append($"{SanitizeName(@this.GetType().Name)}{index}");
+
+                if (constant.Value == @this) shader.Append($"{SanitizeName(@this.GetType().Name, index)}");
                 else shader.Append(constant.Value!);
                 return;
 
@@ -347,7 +316,7 @@ internal static class ShaderCompilation
                 {
                     var member = memberExpr.Member;
                     string name = member.Name;
-                    if (name is ShaderPosition or ShaderNormal or ShaderTextureUv
+                    if (name is ShaderPosition or ShaderNormal or ShaderTextureUv or CameraPosition
                         && memberExpr.Expression is ConstantExpression ce
                         && ce.Value == @this
                         || member.GetCustomAttribute<CalcAttribute>() != default)
@@ -376,17 +345,43 @@ internal static class ShaderCompilation
                 {
                     var method = methodCall.Method;
                     var methodName = method.Name;
-                    if (method.DeclaringType!.IsAssignableTo(typeof(TextureMaterial)) && methodName == "Texture")
+                    var isTexture = method.DeclaringType!.IsAssignableTo(typeof(ColorTextureMaterial)) && methodName == "Texture";
+                    if (isTexture)
                     {
-                        shader.Append($"texture({@this.GetType().Name}{index}.{nameof(TextureMaterial.Handle)}, ");
+                        var name = @this.GetType().Name;
+                        shader.Append($"texture({SanitizeName(name, index)}.Handle, ");
                     }
-                    else if (methodName == "ValueOf") shader.Append('(');
-                    else if (method.DeclaringType == typeof(LightingBase)) shader.Append($"{GlSlType(method.ReturnType)}(");
+                    else if (method.DeclaringType == typeof(LightingBase))
+                    {
+                        switch (methodName)
+                        {
+                            case "ValueOf":
+                                shader.Append('(');
+                                break;
+
+                            case "LengthOf":
+                                shader.Append("length(");
+                                break;
+
+                            case "Add":
+                                shader.Append("white3 - (white3 - ");
+                                CrossCompile(@this, index, methodCall.Arguments[0], shader);
+                                shader.Append(") * (white3 - ");
+                                CrossCompile(@this, index, methodCall.Arguments[1], shader);
+                                shader.Append(")");
+                                return;
+
+                            default:
+                                shader.Append($"{GlSlType(method.ReturnType)}(");
+                                break;
+                        }
+                    }
                     else if (method.DeclaringType == typeof(MathF)) shader.Append($"{GetMathName(method)}(");
                     else if (BuiltInTypes.Contains(method.DeclaringType)) shader.Append($"{methodName.ToLower()}(");
                     else throw new NotSupportedException(expression.ToString());
 
                     Arguments(@this, index, methodCall, shader);
+                    if (isTexture) shader.Append(".rgb");
                     return;
                 }
 
@@ -450,7 +445,7 @@ internal static class ShaderCompilation
         }
     }
 
-    private static void Arguments(object @this, int index, MethodCallExpression methodCall, StringBuilder shader)
+    private static void Arguments(object @this, int? index, MethodCallExpression methodCall, StringBuilder shader)
     {
         CrossCompile(@this, index, methodCall.Arguments[0], shader);
         for (int i = 1; i < methodCall.Arguments.Count; i++)
@@ -530,9 +525,14 @@ internal static class ShaderCompilation
         };
     }
 
-    internal static string SanitizeName(string name)
+    internal static string SanitizeName(string name) => name.Replace("_", string.Empty);
+
+    internal static string SanitizeName(string name, int? index)
     {
-        return name.Replace("_", string.Empty);
+        var sanitizedName = SanitizeName(name);
+        return index == default
+            ? $"_{sanitizedName}"
+            : $"{sanitizedName}{index}";
     }
 
     internal static IEnumerable<PropertyInfo> GetProperties<T>(LightingBase lighting)
@@ -540,7 +540,17 @@ internal static class ShaderCompilation
     {
         return lighting
             .GetType()
-            .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty)
-            .Where(p => p.GetCustomAttribute<T>() != default);
+            .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty)
+            .Where(p => p.GetCustomAttribute<T>() != default)
+            .OrderBy(p => AncestorLevel(p.DeclaringType!));
+    }
+
+    private static int AncestorLevel(Type t)
+    {
+        if (t is not { IsClass: true }) throw new NotSupportedException();
+
+        return t == typeof(object) 
+            ? 0 
+            : 1 + AncestorLevel(t.BaseType!);
     }
 }

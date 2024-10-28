@@ -57,7 +57,7 @@ internal sealed class Lexer
             {
                 return ReadInteger();
             }
-            if (IsLetter(_current))
+            if (IsLetter(_current) || _current == '_')
             {
                 return ReadName();
             }
@@ -84,7 +84,7 @@ internal sealed class Lexer
                 case '/':
                     ReadNext();
                     return _current == '/'
-                        ? (Token)ReadFixToken(Tag.LineComment)
+                        ? ReadFixToken(Tag.LineComment)
                         : new UnexpectedToken(Location);
                 default:
                     ReadNext();
@@ -102,11 +102,10 @@ internal sealed class Lexer
             name += _current;
             ReadNext();
         }
-        if (Keywords.ContainsKey(name))
-        {
-            return new FixToken(Location, Keywords[name]);
-        }
-        return new IdentifierToken(Location, name);
+
+        return Keywords.TryGetValue(name, out var keyword)
+            ? new FixToken(Location, keyword)
+            : new IdentifierToken(Location, name);
     }
 
     private Location Location

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EduGraf.Cameras;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -24,6 +25,9 @@ public abstract class Window
     // the displayed rendering.
     protected Rendering? Rendering { get; private set; }
 
+    // when passed to Show().
+    protected Camera? Camera { get; private set; }
+
     // Create a new window.
     protected Window(int width /* in pixels */, int height /* in pixels */, params Action<InputEvent>[] handlers /* window event handlers */)
     {
@@ -34,9 +38,10 @@ public abstract class Window
     }
 
     // Display the rendering.
-    public virtual void Show(Rendering rendering)
+    public virtual void Show(Rendering rendering, Camera? camera = default)
     {
         Rendering = rendering;
+        Camera = camera;
         OnLoad();
     }
 
@@ -55,7 +60,7 @@ public abstract class Window
     // Do not call this from application programs.
     protected void OnRenderFrame()
     {
-        Rendering!.Graphic.Render(this, Rendering!);
+        Rendering!.Graphic.Render(this, Rendering!, Camera);
     }
 
     // Called by the framework when a keyboard-key is pressed delegating the handling to the camera and rendering.
