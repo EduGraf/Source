@@ -153,9 +153,32 @@ internal class OpenTkApi : GlApi
 
     protected override void Uniform4(uint location, float[] values) { GL.Uniform4((int)location, values.Length, values); }
 
-    protected override void UniformMatrix4(uint location, bool transpose, Matrix4 values)
+    protected override void UniformMatrix2(uint location, bool transpose, Matrix2 value)
     {
-        var elements = values.Elements;
+        var elements = value.Elements;
+        var v = new global::OpenTK.Mathematics.Matrix2(elements[0], elements[1], elements[2], elements[3]);
+        GL.UniformMatrix2((int)location, transpose, ref v);
+    }
+
+    protected override void UniformMatrix3(uint location, bool transpose, Matrix3 value)
+    {
+        var elements = value.Elements;
+        var v = new global::OpenTK.Mathematics.Matrix3(
+            elements[0],
+            elements[1],
+            elements[2],
+            elements[3],
+            elements[4],
+            elements[5],
+            elements[6],
+            elements[7],
+            elements[8]);
+        GL.UniformMatrix3((int)location, transpose, ref v);
+    }
+
+    protected override void UniformMatrix4(uint location, bool transpose, Matrix4 value)
+    {
+        var elements = value.Elements;
         var v = new global::OpenTK.Mathematics.Matrix4(
             elements[0],
             elements[1],

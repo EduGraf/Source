@@ -18,6 +18,8 @@ public class Matrix4 : Tensor
         0, 0, 0, 1
     );
 
+    public Matrix3 XYH => new(this[0, 0], this[0, 1], this[0, 3], this[1, 0], this[1, 1], this[1, 3], this[3, 0], this[3, 1], this[3, 3]);
+
     // Create a new transformation matrix scaling in all axis directions by the same factor.
     public static Matrix4 Scale(float factor) => Scale(factor, factor, factor);
 
@@ -89,10 +91,7 @@ public class Matrix4 : Tensor
             for (int col = 0; col < 4; col++)
             {
                 float sum = 0;
-                for (int k = 0; k < 4; k++)
-                {
-                    sum += l[row, k] * r[k, col];
-                }
+                for (int k = 0; k < 4; k++) sum += l[row, k] * r[k, col];
                 result[4 * row + col] = sum;
             }
         }

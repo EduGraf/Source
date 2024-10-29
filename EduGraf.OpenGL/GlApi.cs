@@ -120,7 +120,9 @@ public abstract class GlApi
     [OmitInDocumentation] protected internal abstract void Uniform2(uint location, float v1, float v2);
     [OmitInDocumentation] protected internal abstract void Uniform3(uint location, float v1, float v2, float v3);
     [OmitInDocumentation] protected internal abstract void Uniform4(uint location, float v1, float v2, float v3, float v4);
-    [OmitInDocumentation] protected internal abstract void UniformMatrix4(uint location, bool transpose, Matrix4 values);
+    [OmitInDocumentation] protected internal abstract void UniformMatrix2(uint location, bool transpose, Matrix2 value);
+    [OmitInDocumentation] protected internal abstract void UniformMatrix3(uint location, bool transpose, Matrix3 value);
+    [OmitInDocumentation] protected internal abstract void UniformMatrix4(uint location, bool transpose, Matrix4 value);
     [OmitInDocumentation] protected internal abstract void Uniform1(uint location, float[] values);
     [OmitInDocumentation] protected internal abstract void Uniform2(uint location, float[] values);
     [OmitInDocumentation] protected internal abstract void Uniform3(uint location, float[] values);

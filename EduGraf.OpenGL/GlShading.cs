@@ -201,6 +201,7 @@ public class GlShading : Shading
         Api.Uniform1(Api.GetUniformLocation(_handle, name), value);
     }
 
+    // Pass value for name to the shader.
     protected internal void Set(string name, uint value, string glslType, bool @checked = true)
     {
         SetUniform(name, glslType, @checked);
@@ -254,6 +255,20 @@ public class GlShading : Shading
     {
         SetUniform(name, "vec4", @checked);
         Api.Uniform4(Api.GetUniformLocation(_handle, name), value.X, value.Y, value.Z, value.W);
+    }
+
+    // Pass value for name to the shader.
+    protected internal void Set(string name, bool transpose, Matrix2 value, bool @checked = true)
+    {
+        SetUniform(name, "mat2", @checked);
+        Api.UniformMatrix2(Api.GetUniformLocation(_handle, name), transpose, value);
+    }
+
+    // Pass value for name to the shader.
+    protected internal void Set(string name, bool transpose, Matrix3 value, bool @checked = true)
+    {
+        SetUniform(name, "mat3", @checked);
+        Api.UniformMatrix3(Api.GetUniformLocation(_handle, name), transpose, value);
     }
 
     // Pass value for name to the shader.
@@ -324,6 +339,9 @@ public class GlShading : Shading
             else if (fieldType.IsAssignableTo(typeof(Color4))) Set(fieldName, (Color4)fieldObj);
             else if (fieldType.IsAssignableTo(typeof(Point2))) Set(fieldName, (Point2)fieldObj);
             else if (fieldType.IsAssignableTo(typeof(Point3))) Set(fieldName, (Point3)fieldObj);
+            else if (fieldType.IsAssignableTo(typeof(Matrix2))) Set(fieldName, false, (Matrix2)fieldObj);
+            else if (fieldType.IsAssignableTo(typeof(Matrix3))) Set(fieldName, false, (Matrix3)fieldObj);
+            else if (fieldType.IsAssignableTo(typeof(Matrix4))) Set(fieldName, false, (Matrix4)fieldObj);
             else if (fieldType.IsAssignableTo(typeof(TextureHandle))) Set(fieldName, ((GlTextureHandle)fieldObj).Handle, "sampler2D");
             else throw new NotSupportedException($"type {fieldType} of {fieldObj} not supported");
         }

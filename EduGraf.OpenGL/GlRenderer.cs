@@ -40,12 +40,14 @@ internal static class GlRenderer
 
                 foreach (var visual in group)
                 {
-                    shading.Set("Model", true, visual.Transform, false);
+                    if (camera == default) shading.Set("Model", true, visual.Transform.XYH, false);
+                    else shading.Set("Model", true, visual.Transform, false);
                     shading.CheckInputs();
 
                     visual.Render();
 
-                    shading.Set("Model", true, Matrix4.Identity, false);
+                    if (camera == default) shading.Set("Model", false, Matrix3.Identity, false);
+                    else shading.Set("Model", false, Matrix4.Identity, false);
                     shading.Reset("Model", false);
                 }
 
