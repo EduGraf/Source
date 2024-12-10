@@ -48,30 +48,34 @@ public abstract class GlGraphic(GlApi api) : Graphic
         GlRenderer.Render(Api, camera, GetAllVisualsByShading(rendering.Scene), window.Width, window.Height, rendering.Background);
     }
 
-    // Create a newn rgb-texture with pixel-type unsigned byte.
-    public TextureHandle CreateRgbTexture<T>(int width, int height)
+    // Create a new rgb-texture with pixel-type unsigned byte or float.
+    public GlTextureHandle CreateRgbTexture<T>(int width, int height)
         where T : struct
     {
-        var pixelType =
-            typeof(T) == typeof(byte) ? GlPixelType.UnsignedByte
-            : typeof(T) == typeof(float) ? GlPixelType.Float
-            : throw new ArgumentOutOfRangeException(nameof(T));
-
-        return new GlTextureHandle(Api, GlTextures.CreateTexture(Api, width, height, GlPixelFormat.Rgb, pixelType));
+        return new GlTextureHandle(Api, GlTextures.CreateTexture(Api, width, height, GlPixelFormat.Rgb, GetPixelType<T>()));
     }
 
-    // Create a new texture with a single color channel.
-    public TextureHandle CreateRedTexture<T>(int width, int height)
+    // Create a new rgba-texture with pixel-type unsigned byte or float.
+    public GlTextureHandle CreateRgbaTexture<T>(int width, int height)
         where T : struct
     {
-        var pixelType =
-            typeof(T) == typeof(byte) ? GlPixelType.UnsignedByte
-            : typeof(T) == typeof(float) ? GlPixelType.Float
-            : throw new ArgumentOutOfRangeException(nameof(T));
-
-        return new GlTextureHandle(Api, GlTextures.CreateTexture(Api, width, height, GlPixelFormat.Red, pixelType));
+        return new GlTextureHandle(Api, GlTextures.CreateTexture(Api, width, height, GlPixelFormat.Rgba, GetPixelType<T>()));
     }
 
+    // Create a new texture having a single color channel with pixel-type unsigned byte or float.
+    public GlTextureHandle CreateRedTexture<T>(int width, int height)
+        where T : struct
+    {
+        return new GlTextureHandle(Api, GlTextures.CreateTexture(Api, width, height, GlPixelFormat.Red, GetPixelType<T>()));
+    }
+
+    private static GlPixelType GetPixelType<T>() where T : struct
+    {
+        return typeof(T) == typeof(byte) ? GlPixelType.UnsignedByte
+            : typeof(T) == typeof(float) ? GlPixelType.Float
+            : throw new ArgumentOutOfRangeException(nameof(T));
+    }
+    
     // Take a color-picture of the scene and store it in the provided texture.
     public void TakePicture(
         IEnumerable<Visual> scene,
