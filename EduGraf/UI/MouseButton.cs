@@ -14,7 +14,7 @@ public enum MouseButton
 
 internal static class MouseButtonExtensions
 {
-    internal static MouseButton TryGetSingle(this MouseButton mouse)
+    public static MouseButton TryGetSingle(this MouseButton mouse)
     {
         return mouse switch
         {

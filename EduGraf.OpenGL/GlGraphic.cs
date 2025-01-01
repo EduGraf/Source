@@ -8,7 +8,6 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace EduGraf.OpenGL;
 
@@ -36,16 +35,17 @@ public abstract class GlGraphic(GlApi api) : Graphic
     }
 
     // Refer to the documentation of the class Graphic.
-    public override TextureHandle CreateTexture(Image<Rgba32> image)
+    public override GlTextureHandle CreateTexture(Image<Rgba32> image)
     {
         return new GlTextureHandle(Api, GlTextures.CreateMipmapTexture(Api, image));
     }
 
     // Refer to the documentation of the class Graphic.
-    public override void Render(Window window, Rendering rendering, Camera? camera = default)
+    public override void Render(Window window, Rendering rendering, Camera camera)
     {
         Api.ExecutePending();
-        GlRenderer.Render(Api, camera, GetAllVisualsByShading(rendering.Scene), window.Width, window.Height, rendering.Background);
+        var allParts = GetPartScene(rendering.Scene);
+        GlRenderer.Render(Api, camera, allParts, window.Width, window.Height, rendering.Background);
     }
 
     // Create a new rgb-texture with pixel-type unsigned byte or float.
@@ -75,35 +75,55 @@ public abstract class GlGraphic(GlApi api) : Graphic
             : typeof(T) == typeof(float) ? GlPixelType.Float
             : throw new ArgumentOutOfRangeException(nameof(T));
     }
-    
+
+    // Create a new cube-texture.
+    public GlTextureHandle CreateCubeTexture<TPixel>(
+        Image<TPixel> left,
+        Image<TPixel> right,
+        Image<TPixel> bottom,
+        Image<TPixel> top,
+        Image<TPixel> front,
+        Image<TPixel> back) 
+        where TPixel : unmanaged, IPixel<TPixel>
+    {
+        return new GlTextureHandle(Api, GlTextures.CreateCubeTexture(Api, left, right, bottom, top, front, back));
+    }
+
     // Take a color-picture of the scene and store it in the provided texture.
     public void TakePicture(
-        IEnumerable<Visual> scene,
+        Visual scene,
         Camera camera,
         Color3 background,
         int width, int height,
-        params TextureHandle[] textures)
+        params GlTextureHandle[] textures)
     {
-        GlRenderer.TakePicture(Api, camera, GetAllVisualsByShading(scene), width, height, background, textures);
+        var partScene = GetPartScene(scene);
+        GlRenderer.TakePicture(Api, camera, partScene, width, height, background, textures);
     }
 
     [OmitInDocumentation]
-    public static void Dispose(IEnumerable<Visual> scene)
+    public static void Dispose(Visual scene)
     {
-        foreach (var group in GetAllVisualsByShading(scene))
+        foreach (var (part, _) in GetPartScene(scene))
         {
-            var shading = group.Key;
-            foreach (var part in group) ((GlSurface)part.Surface).Dispose();
-            shading.Dispose();
+            var surface = (GlSurface)part.Surface;
+            surface.Shading.Dispose();
+            surface.Dispose();
         }
     }
 
-    private static List<IGrouping<GlShading, GlVisualPart>> GetAllVisualsByShading(IEnumerable<Visual> scene)
+    private static List<(GlVisualPart part, Matrix4 transform)> GetPartScene(Visual scene)
     {
-        return scene
-            .SelectMany(visual => visual.Descendants)
-            .OfType<GlVisualPart>()
-            .GroupBy(part => (GlShading)part.Surface.Shading)
-            .ToList();
+        var partScene = new List<(GlVisualPart part, Matrix4 transform)>();
+        CollectPartScene(scene, Matrix4.Identity, partScene);
+        return partScene;
+    }
+
+    private static void CollectPartScene(Visual group, Matrix4 overallTransform, List<(GlVisualPart part, Matrix4 transform)> partScene)
+    {
+        var transform = group.Transform * overallTransform;
+        if (group is GlVisualPart part) partScene.Add((part, transform));
+
+        foreach (var visual in group.Children) CollectPartScene(visual, transform, partScene);
     }
 }

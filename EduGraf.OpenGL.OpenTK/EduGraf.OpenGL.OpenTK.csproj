@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net9.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<Authors>Philipp Kramer</Authors>
 		<Product>EduGraf</Product>
@@ -11,13 +11,13 @@
 		<RepositoryUrl>https://github.com/EduGraf</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PackageLicenseExpression>LGPL-2.0-only</PackageLicenseExpression>
-		<Version>1.1.11</Version>
+		<Version>1.2.0</Version>
 		<Description>This is the OpenGL implemenation of the educational graphics framework based on the third party library OpenTK.</Description>
 	</PropertyGroup>
 	<ItemGroup>
 	  	<None Include="readme.md" Pack="True" PackagePath="\" />
-		<PackageReference Include="OpenTK" Version="4.7.4" />
-		<PackageReference Include="OpenTK.Graphics" Version="4.7.4" />
+		<PackageReference Include="OpenTK" Version="4.9.3" />
+		<PackageReference Include="OpenTK.Graphics" Version="4.9.3" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\EduGraf.OpenGL\EduGraf.OpenGL.csproj" />

@@ -1,6 +1,5 @@
 ﻿using EduGraf.Tensors;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace EduGraf;
 
@@ -9,18 +8,14 @@ public class Visual
 {
     private readonly List<Visual> _children;
 
-    // that can be used for debugging purposes and is not used by the framework.
+    // for debugging purposes (not used by the framework)
     public string Name { get; }
 
-    // the visuals that have been added directly to this visual.
+    // added directly to this
     public IEnumerable<Visual> Children => _children;
 
-    // the transform-matrix applied to this visual.
+    // applied to this; overall transform = product of this and all ancestors
     public Matrix4 Transform { get; set; }
-
-    // this visual and recursively all that have been added to it.
-    public IEnumerable<Visual> Descendants => new[] { this }
-        .Concat(_children.SelectMany(child => child.Descendants));
 
     // Create a new visual.
     internal Visual(string name /* not used by the framework. */)
@@ -33,6 +28,12 @@ public class Visual
     // Add a child visual to below this.
     public void Add(Visual child) => _children.Add(child);
 
+    // Remove all children.
+    public void ClearChildren() => _children.Clear();
+
+    // Remove a specific child.
+    public bool Remove(Visual child) => _children.Remove(child);
+
     // Do not call this from application programs.
     public virtual void Render() { }
 
@@ -40,7 +41,6 @@ public class Visual
     public virtual Visual Scale(float factor /* in world units. */)
     {
         Transform *= Matrix4.Scale(factor);
-        foreach (var child in _children) child.Scale(factor);
         return this;
     }
 
@@ -48,7 +48,6 @@ public class Visual
     public virtual Visual Scale(Vector3 factor /* in world units. */)
     {
         Transform *= Matrix4.Scale(factor);
-        foreach (var child in _children) child.Scale(factor);
         return this;
     }
 
@@ -56,31 +55,27 @@ public class Visual
     public virtual Visual Translate(Vector3 direction /* in world units. */)
     {
         Transform *= Matrix4.Translation(direction);
-        foreach (var child in _children) child.Translate(direction);
         return this;
     }
 
-    // Rotate descendants around the x axis.
+    // Rotate descendants around the x-axis.
     public virtual Visual RotateX(float angle /* in radians */)
     {
         Transform *= Matrix4.RotationX(angle);
-        foreach (var child in _children) child.RotateX(angle);
         return this;
     }
 
-    // Rotate descendants around the y axis.
+    // Rotate descendants around the y-axis.
     public virtual Visual RotateY(float angle /* in radians */)
     {
         Transform *= Matrix4.RotationY(angle);
-        foreach (var child in _children) child.RotateY(angle);
         return this;
     }
 
-    // Rotate descendants around the z axis.
+    // Rotate descendants around the z-axis.
     public virtual Visual RotateZ(float angle /* in radians */)
     {
         Transform *= Matrix4.RotationZ(angle);
-        foreach (var child in _children) child.RotateZ(angle);
         return this;
     }
 

@@ -12,7 +12,7 @@ public abstract class GlApi
     private readonly Queue<Action> _queue = new();
 
     // Execute an action on the device.
-    public void Invoke(Action action)
+    protected internal void Invoke(Action action)
     {
         _queue.Enqueue(action);
     }
@@ -28,7 +28,7 @@ public abstract class GlApi
     private readonly BitArray _textureUnitsInUse = new(64);
 
     // Shading aspects working with textures need to acquire a unit to handle the texture when applied.
-    public int AcquireTextureUnit()
+    protected internal int AcquireTextureUnit()
     {
         for (int unit = 0; unit < _textureUnitsInUse.Length; unit++)
         {
@@ -43,7 +43,7 @@ public abstract class GlApi
     }
 
     // Shading aspects need to release acquired texture units when unapplied.
-    public void ReleaseTextureUnit(int unit)
+    protected internal void ReleaseTextureUnit(int unit)
     {
         if (!_textureUnitsInUse[unit]) throw new InvalidOperationException("release of not acquired texture unit");
         _textureUnitsInUse[unit] = false;
@@ -120,8 +120,8 @@ public abstract class GlApi
     [OmitInDocumentation] protected internal abstract void Uniform2(uint location, float v1, float v2);
     [OmitInDocumentation] protected internal abstract void Uniform3(uint location, float v1, float v2, float v3);
     [OmitInDocumentation] protected internal abstract void Uniform4(uint location, float v1, float v2, float v3, float v4);
-    [OmitInDocumentation] protected internal abstract void UniformMatrix2(uint location, bool transpose, Matrix2 value);
-    [OmitInDocumentation] protected internal abstract void UniformMatrix3(uint location, bool transpose, Matrix3 value);
+    [OmitInDocumentation] protected internal abstract void UniformMatrix2(uint location, bool transpose, float[] elements);
+    [OmitInDocumentation] protected internal abstract void UniformMatrix3(uint location, bool transpose, float[] elements);
     [OmitInDocumentation] protected internal abstract void UniformMatrix4(uint location, bool transpose, Matrix4 value);
     [OmitInDocumentation] protected internal abstract void Uniform1(uint location, float[] values);
     [OmitInDocumentation] protected internal abstract void Uniform2(uint location, float[] values);

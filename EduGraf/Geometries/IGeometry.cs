@@ -1,11 +1,14 @@
-﻿namespace EduGraf.Geometries;
+﻿using System.Collections.Generic;
+
+namespace EduGraf.Geometries;
 
 // This is the base interface for all geometries.
 public interface IGeometry
 {
-    // unrolled coordinates (x, y [,z]) of the geometries vertex positions.
-    float[] Position { get; }
+    public float[] Position { get; } // unrolled vertex positions (x, y, z)
 
-    // of then vertices.
-    int Count { get; }
+    public int Count { get; } // of the vertices
+
+    // Returns all triangles with indices to vertices.
+    public List<Triangle> GetAllTriangles();
 }

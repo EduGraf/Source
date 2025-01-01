@@ -12,7 +12,7 @@ namespace EduGraf;
 public abstract class Graphic
 {
     // Create a new group of objects that is transformed together.
-    public static Visual CreateGroup(string name  /* of the group (not used by the framework). */) => new(name);
+    public static Visual CreateGroup(string name  /* of the group (not used by the framework) */) => new(name);
 
     // Create a new texture from an image.
     public abstract TextureHandle CreateTexture(Image<Rgba32> image);
@@ -23,9 +23,9 @@ public abstract class Graphic
     // Create a new surface with a particular shading and geometry.
     public abstract Surface CreateSurface(Shading shading, IGeometry geometry);
 
-    // Create a newn object with the given surface that can be placed into the virtual world.
+    // Create a new object with the given surface that can be placed into the virtual world.
     public abstract VisualPart CreateVisual(string name, Surface surface);
 
     // Display the rendering in the given window.
-    public abstract void Render(Window window, Rendering rendering, Camera? camera = default);
+    public abstract void Render(Window window, Rendering rendering, Camera camera);
 }

@@ -30,7 +30,7 @@ internal sealed class Parser
     {
         _lexer = lexer;
         _errors = errors;
-        Next();
+        Next(out _);
     }
 
     /// program = version { ( "//" ... | declaration ) }.
@@ -44,14 +44,18 @@ internal sealed class Parser
             if (Is(Tag.LineComment))
             {
                 _lexer.SkipToNewLine();
-                Next();
+                Next(out _);
             }
             else
             {
                 declarations.Add(Declaration());
             }
         }
-        return new ProgramNode(new Location(start, EndPosition), declarations);
+
+        if (_errors.Count == 0) return new ProgramNode(new Location(start, EndPosition), declarations);
+        
+        var errorList = string.Join(Environment.NewLine, _errors);
+        throw new InvalidProgramException($"GLSL program cannot be parsed because of the following errors {errorList}");
     }
 
     /// version = '#' "version" integer
@@ -59,19 +63,24 @@ internal sealed class Parser
     {
         if (Is(Tag.Hash))
         {
-            Next();
+            Next(out _);
             Check(Tag.Version);
-            ReadInteger(false);
+            ReadInteger(false, out bool isAtEndOfLine);
+            if (!isAtEndOfLine)
+            {
+                _lexer.SkipToNewLine();
+                Next(out _);
+            }
         }
     }
 
     /// declaration = struct | channel | define | procedure.
     private DeclarationNode? Declaration()
     {
-        if (Is(Tag.Struct)) { Next(); return Struct(); }
+        if (Is(Tag.Struct)) { Next(out _); return Struct(); }
         if (IsAny(Tag.Layout, Tag.Flat, Tag.In, Tag.Out, Tag.Uniform)) return Channel();
-        if (Is(Tag.Hash)) { Next(); return Define(); }
-        else return Procedure();
+        if (Is(Tag.Hash)) { Next(out _); return Define(); }
+        return Procedure();
     }
 
 
@@ -95,20 +104,20 @@ internal sealed class Parser
 
         if (Is(Tag.Uniform))
         {
-            Next();
+            Next(out _);
             return Channel(Direction.Uniform);
         }
 
-        if (Is(Tag.Flat)) Next();
+        if (Is(Tag.Flat)) Next(out _);
 
         if (Is(Tag.In))
         {
-            Next();
+            Next(out _);
             return Channel(Direction.In);
         }
         if (Is(Tag.Out))
         {
-            Next();
+            Next(out _);
             return Channel(Direction.Out);
         }
 
@@ -119,11 +128,11 @@ internal sealed class Parser
     /// layout = "layout" "(" "location" "=" number ")".
     private void Layout()
     {
-        Next();
+        Next(out _);
         Check(Tag.OpenParenthesis);
         Check(Tag.Location);
         Check(Tag.Equal);
-        ReadInteger(false);
+        ReadInteger(false, out _);
         Check(Tag.CloseParenthesis);
     }
 
@@ -155,7 +164,7 @@ internal sealed class Parser
             Error($"{Tag.Define} expected");
         }
         _lexer.SkipToNewLine();
-        Next();
+        Next(out _);
         return new DefineNode(new Location(startPosition, EndPosition));
     }
 
@@ -173,7 +182,7 @@ internal sealed class Parser
     private void SkipClause(Tag open, Tag close, bool nested)
     {
         if (!Is(open)) return;
-        Next();
+        Next(out _);
         int count = 1;
         while (count > 0)
         {
@@ -196,37 +205,25 @@ internal sealed class Parser
                 count--;
             }
 
-            Next();
+            Next(out _);
         }
     }
 
-    private IdentifierNode Identifier()
-    {
-        return new IdentifierNode(_current!.Location, ReadIdentifier());
-    }
+    private IdentifierNode Identifier() => new(_current!.Location, ReadIdentifier());
 
     private int StartPosition => _current == default ? -1 : _current.Location.Start;
 
     private int EndPosition { get; set; }
 
-    private void Next()
+    private void Next(out bool isOnNewLine)
     {
-        if (_current != default)
-        {
-            EndPosition = _current.Location.End;
-        }
-        _current = _lexer.Next();
+        if (_current != default) EndPosition = _current.Location.End;
+        _current = _lexer.Next(out isOnNewLine);
     }
 
-    private bool Is(Tag tag)
-    {
-        return _current is FixToken token && token.Tag == tag;
-    }
+    private bool Is(Tag tag) => _current is FixToken token && token.Tag == tag;
 
-    private bool IsAny(params Tag[] tags)
-    {
-        return _current is FixToken token && Array.IndexOf(tags, token.Tag) >= 0;
-    }
+    private bool IsAny(params Tag[] tags) => _current is FixToken token && Array.IndexOf(tags, token.Tag) >= 0;
 
     private void Check(Tag tag)
     {
@@ -234,38 +231,32 @@ internal sealed class Parser
         {
             Error($"{tag} expected");
         }
-        Next();
+        Next(out _);
     }
 
-    private bool IsIdentifier()
-    {
-        return _current is IdentifierToken;
-    }
+    private bool IsIdentifier() => _current is IdentifierToken;
 
     private string ReadIdentifier()
     {
         if (!IsIdentifier())
         {
             Error("Identifier expected");
-            Next();
+            Next(out _);
             return ErrorIdentifier;
         }
         var name = ((IdentifierToken)_current!).Name;
-        Next();
+        Next(out _);
         return name;
     }
 
-    private bool IsInteger()
-    {
-        return _current is IntegerToken;
-    }
+    private bool IsInteger() => _current is IntegerToken;
 
-    private int ReadInteger(bool allowMinValue)
+    private int ReadInteger(bool allowMinValue, out bool isAtEndOfLine)
     {
         if (!IsInteger())
         {
             Error("Integer expected");
-            Next();
+            Next(out isAtEndOfLine);
             return default;
         }
         var token = (IntegerToken)_current!;
@@ -273,12 +264,9 @@ internal sealed class Parser
         {
             Error("Too large integer");
         }
-        Next();
+        Next(out isAtEndOfLine);
         return token.Value;
     }
 
-    private void Error(string message)
-    {
-        _errors.Add($"{message} LOCATION {_current!.Location}");
-    }
+    private void Error(string message) => _errors.Add($"{message} LOCATION {_current!.Location}");
 }

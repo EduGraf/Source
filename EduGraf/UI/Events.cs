@@ -10,44 +10,36 @@ public enum Pressing
 }
 
 // This is the abstract base class for event handling.
-public abstract class InputEvent {}
+public interface IInputEvent;
 
 // This is the concrete class for key events.
-public class KeyInputEvent(Pressing pressing, ConsoleKey key) : InputEvent
+public readonly struct KeyInputEvent(Pressing pressing, ConsoleKey key) : IInputEvent
 {
-    // if the key is going down or up.
-    public Pressing Pressing { get; } = pressing;
+    public Pressing Pressing { get; } = pressing; // if the key is going down or up
 
-    // that was pressed.
-    public ConsoleKey Key { get; } = key;
+    public ConsoleKey Key { get; } = key; // that was pressed
 }
 
 // This is the concrete class for mouse button events.
-public class MouseButtonEvent(Pressing pressing, MouseButton button) : InputEvent
+public readonly struct MouseButtonEvent(Pressing pressing, MouseButton button) : IInputEvent
 {
-    // if the button is going down or up.
-    public Pressing Pressing { get; } = pressing;
+    public Pressing Pressing { get; } = pressing; // if the button is going down or up
 
-    // that was pressed.
-    public MouseButton Button { get; } = button;
+    public MouseButton Button { get; } = button; // that was pressed
 }
 
 // This is the concrete class for mouse move events.
-public class MouseMoveEvent(float x, float y) : InputEvent
+public readonly struct MouseMoveEvent(float x, float y) : IInputEvent
 {
-    // absolute position in pixels.
-    public float X { get; } = x;
+    public float X { get; } = x; // absolute position in pixels
 
-    // absolute position in pixels.
-    public float Y { get; } = y;
+    public float Y { get; } = y; // absolute position in pixels
 }
 
 // This is the concrete class for mouse scroll events.
-public class MouseScrollEvent(float deltaX, float deltaY) : InputEvent
+public readonly struct MouseScrollEvent(float deltaX, float deltaY) : IInputEvent
 {
-    // relative position in pixels.
-    public float DeltaX { get; } = deltaX;
+    public float DeltaX { get; } = deltaX; // relative position in pixels
 
-    // relative position in pixels.
-    public float DeltaY { get; } = deltaY;
+    public float DeltaY { get; } = deltaY; // relative position in pixels
 }

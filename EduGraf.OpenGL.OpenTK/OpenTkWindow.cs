@@ -17,7 +17,7 @@ public sealed class OpenTkWindow : UI.Window, IDisposable
 
     static OpenTkWindow()
     {
-        KeyMapping = new Dictionary<Keys, ConsoleKey>();
+        KeyMapping = new();
         foreach (Keys key in Enum.GetValues(typeof(Keys)))
         {
             string keyName = Enum.GetName(typeof(Keys), key)!;
@@ -87,8 +87,9 @@ public sealed class OpenTkWindow : UI.Window, IDisposable
         OpenTkGraphic graphic,
         int width,
         int height,
-        params Action<InputEvent>[] eventHandlers)
-        : this(title, graphic, width, height, 60, false, eventHandlers)
+        Camera camera,
+        params Action<IInputEvent>[] eventHandlers)
+        : this(title, graphic, width, height, 60, false, camera, eventHandlers)
     {
     }
 
@@ -99,17 +100,17 @@ public sealed class OpenTkWindow : UI.Window, IDisposable
         int height,
         int targetFrameRate,
         bool antiAliased,
-        params Action<InputEvent>[] eventHandlers)
-        : base(width, height, eventHandlers)
+        Camera camera,
+        params Action<IInputEvent>[] eventHandlers)
+        : base(width, height, camera, eventHandlers)
     {
         var settings = new GameWindowSettings
         {
-            RenderFrequency = targetFrameRate,
             UpdateFrequency = targetFrameRate
         };
         var nativeSettings = new NativeWindowSettings
         {
-            Size = new Vector2i(width, height),
+            ClientSize = new Vector2i(width, height),
             Title = title,
             RedBits = 8,
             GreenBits = 8,
@@ -135,9 +136,9 @@ public sealed class OpenTkWindow : UI.Window, IDisposable
         _window.MouseWheel += OnMouseScroll;
     }
 
-    public override void Show(Rendering rendering, Camera? camera = default)
+    public override void Show(Rendering rendering)
     {
-        base.Show(rendering, camera);
+        base.Show(rendering);
         _window.Run();
     }
 
@@ -172,7 +173,7 @@ public sealed class OpenTkWindow : UI.Window, IDisposable
         if (key == ConsoleKey.G)
         {
             TogglePolygonMode();
-            GL.PolygonMode(MaterialFace.FrontAndBack, _polygonMode);
+            GL.PolygonMode(TriangleFace.FrontAndBack, _polygonMode);
         }
     }
 

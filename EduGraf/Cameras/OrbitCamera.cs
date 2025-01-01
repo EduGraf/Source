@@ -4,21 +4,21 @@ using System;
 
 namespace EduGraf.Cameras;
 
-// This camera orbits around the given center on the given radius. Refer to the UI documentation about how to control it.
-// Pass in its position and the center around which it orbits. The camera is perspective by default.
-public class OrbitCamera(Point3 position, Point3 center, Projection? projection = default)
+// This camera orbits around the given center on the given radius.
+// Refer to the UI documentation about how to control it.
+// Pass in its position and the center around which it orbits.
+// The camera is perspective by default.
+public class OrbitCamera(Point3 position, Point3 center, Vector3 up, Projection? projection = default)
     : Camera(
-        new View(position, center - position, Vector3.UnitY),
+        new View(position, center - position, up),
         projection ?? new PerspectiveProjection(0.1f, 100, MathF.PI / 4))
 {
-    private float _radius = (center - position).Length();
-    private Vector2 _mousePosition = new(0, 0);
+    private float _radius = (center - position).Length;
 
-    // this camera looks at and orbits around.
-    public Point3 Center { get; private set; } = center;
+    public Point3 Center { get; private set; } = center; // this camera looks at and orbits around
 
-    // Hande the input event. Pass this to the window inorder to receive the events.
-    public override void Handle(InputEvent e)
+    // See overridden method.
+    public override void Handle(IInputEvent e)
     {
         base.Handle(e);
 
@@ -28,61 +28,48 @@ public class OrbitCamera(Point3 position, Point3 center, Projection? projection 
             {
                 case ConsoleKey.D5:
                 case ConsoleKey.NumPad5:
-                case ConsoleKey.PageUp:
                 case ConsoleKey.E:
-                    Zoom(-1);
+                    Zoom(true);
                     break;
 
                 case ConsoleKey.D0:
                 case ConsoleKey.NumPad0:
-                case ConsoleKey.PageDown:
                 case ConsoleKey.Q:
-                    Zoom(+1);
+                    Zoom(false);
                     break;
             }
         }
 
         if (e is MouseMoveEvent mme)
         {
-            float x = mme.X;
-            float y = mme.Y;
-
-            const float rotateSensitivity = 1f / 200;
-            const float moveSensitivity = 2 * rotateSensitivity;
-
-            var newPosition = new Vector2(x, y);
-            var delta = _mousePosition - newPosition;
-            _mousePosition = newPosition;
+            var delta = UpdateMouse((mme.X, mme.Y));
 
             switch (PressedButtons.TryGetSingle())
             {
                 case MouseButton.Left:
-                    Pitch += rotateSensitivity * delta.Y;
-                    Yaw += rotateSensitivity * delta.X;
+                    Pitch += RotateSensitivity * delta.y;
+                    Yaw += RotateSensitivity * delta.x;
                     break;
 
                 case MouseButton.Right:
                     var lookOutX = Vector3.Cross(View.LookOut, Vector3.UnitY);
                     var lookOutY = Vector3.Cross(View.LookOut, lookOutX);
-                    Center += moveSensitivity * (delta.X * lookOutX + delta.Y * lookOutY);
+                    Center += MoveSensitivity * (delta.x * lookOutX + delta.y * lookOutY);
                     break;
             }
 
             UpdatePosition();
         }
 
-        if (e is MouseScrollEvent mse) Zoom(mse.DeltaY);
+        if (e is MouseScrollEvent mse) Zoom(mse.DeltaY > 0);
     }
 
-    private void Zoom(float value)
+    private void Zoom(bool closer)
     {
-        _radius += value;
+        float scale = closer ? ZoomPercentage : 1 / ZoomPercentage;
+        _radius *= scale;
 
-        if (Projection is OrthographicProjection orthographic)
-        {
-            const float sensitivity = 1f / 10f;
-            orthographic.Scale *= 1 + sensitivity * value;
-        }
+        if (Projection is OrthographicProjection orthographic) orthographic.Scale *= scale;
 
         UpdatePosition();
     }

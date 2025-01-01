@@ -43,11 +43,11 @@ internal sealed class Lexer
         }
     }
 
-    internal Token Next()
+    internal Token Next(out bool isOnNewLine)
     {
         while (true)
         {
-            SkipBlanks();
+            isOnNewLine = SkipBlanks();
             _tokenStart = _position;
             if (_endOfText)
             {
@@ -170,12 +170,16 @@ internal sealed class Lexer
         return 'A' <= c && c <= 'Z' || 'a' <= c && c <= 'z';
     }
 
-    private void SkipBlanks()
+    private bool SkipBlanks()
     {
+        bool containsNewLine = false;
         while (!_endOfText && _current <= ' ')
         {
+            if (_current == '\n') containsNewLine = true;
             ReadNext();
         }
+
+        return containsNewLine;
     }
 
     private void Error(int position, string message)

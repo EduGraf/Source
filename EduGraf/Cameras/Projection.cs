@@ -18,10 +18,10 @@ public abstract class Projection(float near, float far)
 // Represents a centered perspective projection.
 public class PerspectiveProjection(float near, float far, float fovY) : Projection(near, far)
 {
-    // the field of view y angle in radians.
+    // the field of view y angle in radians
     public float FovY { get; } = fovY;
 
-    // Ditto.
+    // See overridden method.
     public override Matrix4 GetMatrix(float aspect /* projection plane width divided by height */)
     {
         return Matrix4.GetPerspectiveProjection(FovY, aspect, Near, Far);
@@ -46,22 +46,16 @@ public class OffCenterPerspectiveProjection(float near, float far, bool toNear, 
     // position
     public Point3 Camera { private get; set; } = Point3.Origin;
 
-    // Ditto.
-    public override Matrix4 GetMatrix(float aspect)
-    {
-        return Matrix4.GetOffCenterProjection(Camera, Center, Right, Up, Near, Far, ToNear);
-    }
+    // See overridden method.
+    public override Matrix4 GetMatrix(float aspect) => Matrix4.GetOffCenterProjection(Camera, Center, Right, Up, Near, Far, ToNear);
 }
 
 // Represents an orthographic projection.
 public class OrthographicProjection(float near, float far, float scale) : Projection(near, far)
 {
-    // that is applied in the transformation to the projection plan.
+    // applied in the transformation to the projection plane
     public float Scale { get; set; } = scale;
 
-    // Ditto.
-    public override Matrix4 GetMatrix(float aspect)
-    {
-        return Matrix4.GetOrthographicProjection(Scale * aspect, Scale, Near, Far);
-    }
+    // See overridden method.
+    public override Matrix4 GetMatrix(float aspect) => Matrix4.GetOrthographicProjection(Scale * aspect, Scale, Near, Far);
 }

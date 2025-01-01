@@ -10,14 +10,14 @@ public class GlTextureHandle(GlApi api, uint handle) : TextureHandle, IDisposabl
     protected internal uint Handle { get; } = handle;
 
     // Activates the texture on the selected unit.
-    public void Activate(int unit)
+    protected internal void Activate(int unit)
     {
         api.ActiveTexture(GlTextureUnit.Texture0 + unit);
         api.BindTexture(GlTextureTarget.Texture2D, Handle);
     }
 
     // Deactivates the texture.
-    public void Deactivate()
+    protected internal void Deactivate()
     {
         api.ClearTexture();
     }

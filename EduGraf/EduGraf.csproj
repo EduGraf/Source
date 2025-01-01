@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net9.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<Authors>Philipp Kramer</Authors>
 		<Product>EduGraf</Product>
@@ -11,7 +11,7 @@
 		<RepositoryUrl>https://github.com/EduGraf</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PackageLicenseExpression>LGPL-2.0-only</PackageLicenseExpression>
-		<Version>1.1.9</Version>
+		<Version>1.2.0</Version>
 		<Description>This is the central abstraction layer of the educational graphics framework.</Description>
 	</PropertyGroup>
 	<ItemGroup>

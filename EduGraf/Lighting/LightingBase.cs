@@ -25,9 +25,6 @@ public abstract class LightingBase
     // get the length of a vector.
     protected float LengthOf(Expression<Func<Vector3>> vector) => throw new NotSupportedException("not callable");
 
-    // Create a new 2d vector.
-    protected Vector2 VectorOf(float x, float y) => throw new NotSupportedException("not callable");
-
     // Create a new 3d vector.
     protected Vector3 VectorOf(float x, float y, float z) => throw new NotSupportedException("not callable");
 

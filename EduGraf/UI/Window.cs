@@ -1,47 +1,45 @@
 ﻿using EduGraf.Cameras;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace EduGraf.UI;
 
 // This is the platform independent window abstraction.
 public abstract class Window
 {
-    private readonly List<Action<InputEvent>> _handlers;
+    private readonly Action<IInputEvent>[] _handlers;
 
-    // the width of the window in pixels.
-    public int Width { get; protected set; }
+    public int Width { get; protected set; } // of the window in pixels
 
-    // the height of the window in pixels.
-    public int Height { get; protected set; }
+    public int Height { get; protected set; } // of the window in pixels
 
-    // in float pixels.
-    public virtual (float x, float y) MousePosition { get; private set; }
+    public virtual (float x, float y) MousePosition { get; private set; } // in float pixels
 
-    // in unknown unit.
-    public virtual (float x, float y) MouseWheel { get; private set; }
+    public virtual (float x, float y) MouseWheel { get; private set; } // in unknown unit
 
-    // the displayed rendering.
-    protected Rendering? Rendering { get; private set; }
+    protected Rendering? Rendering { get; private set; } // displayed
 
-    // when passed to Show().
-    protected Camera? Camera { get; private set; }
+    protected Camera Camera { get; } // to produce the rendering
 
     // Create a new window.
-    protected Window(int width /* in pixels */, int height /* in pixels */, params Action<InputEvent>[] handlers /* window event handlers */)
+    protected Window(
+        int width,     // in pixels
+        int height,    // in pixels
+        Camera camera, // handles events if handlers are not passed explicitly
+        params Action<IInputEvent>[] handlers) // window event handlers
     {
         Width = width;
         Height = height;
+        Camera = camera;
 
-        _handlers = handlers.ToList();
+        _handlers = handlers.Length == 0
+            ? [ camera.Handle ]
+            : handlers;
     }
 
     // Display the rendering.
-    public virtual void Show(Rendering rendering, Camera? camera = default)
+    public virtual void Show(Rendering rendering)
     {
         Rendering = rendering;
-        Camera = camera;
         OnLoad();
     }
 
@@ -63,45 +61,45 @@ public abstract class Window
         Rendering!.Graphic.Render(this, Rendering!, Camera);
     }
 
-    // Called by the framework when a keyboard-key is pressed delegating the handling to the camera and rendering.
+    // The framework calls this method when a keyboard-key is pressed delegating the handling to the camera and rendering.
     protected void OnKeyDown(ConsoleKey key)
     {
         Handle(new KeyInputEvent(Pressing.Down, key));
     }
 
-    // Called by the framework when a keyboard-key is released delegating the handling to the camera and rendering.
+    // The framework calls this method when a keyboard-key is released delegating the handling to the camera and rendering.
     protected void OnKeyUp(ConsoleKey key)
     {
         Handle(new KeyInputEvent(Pressing.Up, key));
     }
 
-    // Called by the framework when a mouse-button is pressed delegating the handling to the camera and rendering.
+    // The framework calls this method when a mouse-button is pressed delegating the handling to the camera and rendering.
     protected void OnMouseButtonDown(MouseButton button)
     {
         Handle(new MouseButtonEvent(Pressing.Down, button));
     }
 
-    // Called by the framework when a mouse-button is released delegating the handling to the camera and rendering.
+    // The framework calls this method when a mouse-button is released delegating the handling to the camera and rendering.
     protected void OnMouseButtonUp(MouseButton button)
     {
         Handle(new MouseButtonEvent(Pressing.Up, button));
     }
 
-    // Called by the framework when the mouse is moved delegating the handling to the camera and rendering.
+    // The framework calls this method when the mouse is moved delegating the handling to the camera and rendering.
     protected void OnMouseMove(float x, float y)
     {
         MousePosition = (x, y);
         Handle(new MouseMoveEvent(x, y));
     }
 
-    // Called by the framework when the mouse-wheel is turned delegating the handling to the camera and rendering.
+    // The framework calls this method when the mouse-wheel is turned delegating the handling to the camera and rendering.
     protected void OnMouseScroll(float deltaX, float deltaY)
     {
         MouseWheel = (MouseWheel.x + deltaX, MouseWheel.y + deltaY);
         Handle(new MouseScrollEvent(deltaX, deltaY));
     }
 
-    private void Handle(InputEvent e)
+    private void Handle(IInputEvent e)
     {
         foreach (var handler in _handlers) handler(e);
     }

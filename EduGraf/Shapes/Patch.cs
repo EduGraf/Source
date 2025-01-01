@@ -8,27 +8,27 @@ public static class Patch
     // Return the surface.
     public static float[] GetPositions(
         int nx, // number of sub-patches in x-axis direction.
-        int nz, // number of sub-patches in y-axis direction. 
-        Func<float, float, float> y) // height in y-axis-direction for any given point on the patch.
+        int ny, // number of sub-patches in y-axis direction. 
+        Func<float, float, float> z) // height in y-axis-direction for any given point on the patch.
     {
-        var positions = new float[(nx + 1) * (nz + 1) * 3];
-        float d = 2f / (nx + nz);
-        float cz = -nz * d / 2f;
+        var positions = new float[(nx + 1) * (ny + 1) * 3];
+        float d = 2f / (nx + ny);
+        float cy = -ny * d / 2f;
         float cx0 = -nx * d / 2f;
         int i = 0;
-        for (int z = 0; z <= nz; z++)
+        for (int y = 0; y <= ny; y++)
         {
             float cx = cx0;
 
             for (int x = 0; x <= nx; x++)
             {
                 positions[i++] = cx;
-                positions[i++] = y(cx, cz);
-                positions[i++] = cz;
+                positions[i++] = cy;
+                positions[i++] = z(cx, cy);
                 cx += d;
             }
 
-            cz += d;
+            cy += d;
         }
 
         return positions;
@@ -37,7 +37,7 @@ public static class Patch
     // Return the surface.
     public static ushort[] GetTriangles(
         int nx, // number of sub-patches in x-axis direction.
-        int nz) // number of sub-patches in y-axis direction. )
+        int nz) // number of sub-patches in y-axis direction.
     {
         var triangles = new ushort[nx * nz * 2 * 3];
         int t = 0;

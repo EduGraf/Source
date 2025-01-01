@@ -7,7 +7,7 @@ public static class Cube
 {
     // of each face, shared vertices are repeated.
     public static float[] Positions { get; } =
-    {
+    [
         // front
         -1,-1, 1,
         1,-1, 1,
@@ -37,12 +37,12 @@ public static class Cube
         1,-1, 1,
         -1,-1, 1,
         -1,-1,-1,
-        1,-1,-1,
-    };
+        1,-1,-1
+    ];
 
     // per vertex.
     public static float[] Normals { get; } =
-    {
+    [
         // front
         0, 0, 1,
         0, 0, 1,
@@ -72,12 +72,12 @@ public static class Cube
         0,-1, 0,
         0,-1, 0,
         0,-1, 0,
-        0,-1, 0,
-    };
+        0,-1, 0
+    ];
 
     // U in model space.
     public static float[] Tangent { get; } =
-    {
+    [
         // front
         1, 0, 0,
         1, 0, 0,
@@ -107,12 +107,12 @@ public static class Cube
         -1, 0, 0,
         -1, 0, 0,
         -1, 0, 0,
-        -1, 0, 0,
-    };
+        -1, 0, 0
+    ];
 
     // V in model space.
     public static float[] BiTangent { get; } =
-    {
+    [
         // front
         0, 1, 0,
         0, 1, 0,
@@ -142,8 +142,8 @@ public static class Cube
         0, 0,-1,
         0, 0,-1,
         0, 0,-1,
-        0, 0,-1,
-    };
+        0, 0,-1
+    ];
 
     // In texture space.
     public static float[] TextureUv { get; } = Enumerable
@@ -153,7 +153,7 @@ public static class Cube
 
     // In vertex numbers.
     public static ushort[] Triangles { get; } =
-    {
+    [
         // front
         0, 1, 2,
         2, 3, 0,
@@ -171,6 +171,6 @@ public static class Cube
         18, 19, 16,
         // bottom
         20, 21, 22,
-        22, 23, 20,
-    };
+        22, 23, 20
+    ];
 }

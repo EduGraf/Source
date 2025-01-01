@@ -33,10 +33,10 @@ internal class GlSurface : Surface, IDisposable
 
         switch (geometry)
         {
-            case ITriangle32Mapping mapping32:
+            case ITriangle32Geometry mapping32:
                 _indexBuffer = new GlIndexBuffer(api, mapping32.Triangles);
                 break;
-            case ITriangle16Mapping mapping16:
+            case ITriangle16Geometry mapping16:
                 _indexBuffer = new GlIndexBuffer(api, mapping16.Triangles);
                 break;
         }
@@ -66,7 +66,6 @@ internal class GlSurface : Surface, IDisposable
 
         VertexArray = api.GenVertexArray();
         shading.SetVertexArrayAttributes(VertexArray, attributes, VertexBuffers);
-
     }
 
     internal virtual void Draw()
@@ -76,11 +75,11 @@ internal class GlSurface : Surface, IDisposable
         if (_indexBuffer != null)
         {
             _api.BindBuffer(GlBufferTarget.ElementArrayBuffer, _indexBuffer.Handle);
-            if (Geometry is ITriangle32Mapping)
+            if (Geometry is ITriangle32Geometry)
             {
                 _api.DrawIndexedTriangles<uint>(_indexBuffer.Length, nint.Zero);
             }
-            else if (Geometry is ITriangle16Mapping)
+            else if (Geometry is ITriangle16Geometry)
             {
                 _api.DrawIndexedTriangles<ushort>(_indexBuffer.Length, nint.Zero);
             }

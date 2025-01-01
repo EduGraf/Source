@@ -1,25 +1,24 @@
 ﻿using EduGraf.Tensors;
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
 namespace EduGraf;
 
-// This is a mathematical representation of the view.
+// This is a mathematical representation of a view.
 public class View
 {
     private Vector3 _lookOut;
     private Vector3 _up;
 
-    // from which the view is.
+    // from where the view looks
     public Point3 Position { get; set; }
 
-    // into the direction
+    // from the position
     public Vector3 LookOut
     {
         get => _lookOut;
         set => _lookOut = Vector3.Normalize(value);
     }
 
-    // vertical direction.
+    // vertical direction
     public Vector3 Up
     {
         get => _up;
@@ -35,5 +34,5 @@ public class View
     }
 
     // Get the rotation matrix corresponding to the view.
-    public Matrix4 GetViewMatrix() => Matrix4.GetView(Position, LookOut, Up);
+    public Matrix4 GetMatrix() => Matrix4.GetView(this);
 }

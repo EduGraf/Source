@@ -7,6 +7,11 @@ namespace EduGraf.Cameras;
 // This is the camera abstraction. The camera is oriented such that the x-z plane is horizontal.
 public class Camera
 {
+    protected const float RotateSensitivity = 1f / 200;
+    protected const float MoveSensitivity = 2 * RotateSensitivity;
+    protected const float ZoomPercentage = 0.95f;
+    protected const float FlySpeed = 1f / 5;
+
     private static readonly float HalfProjectionHeight = MathF.Tan(MathF.PI / 8);
 
     // that is applied
@@ -42,6 +47,8 @@ public class Camera
     // the set of mouse buttons that is currently pressed.
     protected MouseButton PressedButtons { get; private set; }
 
+    private (float x, float y)? _mousePosition;
+
     // Create a new camera.
     public Camera(View view, Projection projection)
     {
@@ -53,6 +60,17 @@ public class Camera
             MathF.Sign(lookOut.Z) * 
             MathF.Acos(lookOut.X) / 
             MathF.Cos(lookOut.Y); // division by 0 is not a problem, since lookOut.Y < Pi/2
+    }
+
+    // Return the delta to the old and store the new position.
+    protected (float x, float y) UpdateMouse((float x, float y) newPosition)
+    {
+        (float x, float y) delta = _mousePosition.HasValue
+            ? (_mousePosition.Value.x - newPosition.x,
+               _mousePosition.Value.y - newPosition.y)
+            : (0, 0);
+        _mousePosition = newPosition;
+        return delta;
     }
 
     private void UpdateLookAt()
@@ -68,7 +86,7 @@ public class Camera
     // Limit the value in the given range plus and minus around zero.
     protected static float Limit(float value, float range)
     {
-        return Math.Min(Math.Max(value, -range), range);
+        return MathF.Min(MathF.Max(value, -range), range);
     }
 
     // Return the world positions of the projection plane in unit distance from the camera position. This is useful to calculate the view-frustum.
@@ -94,8 +112,8 @@ public class Camera
         return (tl, tr, bl, br);
     }
 
-    // Hande the input event. Pass this to the window inorder to receive the events.
-    public virtual void Handle(InputEvent e)
+    // The window calls this method to pass events.
+    public virtual void Handle(IInputEvent e)
     {
         if (e is MouseButtonEvent mbe)
         {

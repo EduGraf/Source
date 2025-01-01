@@ -21,7 +21,6 @@ internal static class ShaderCompilation
     private const string CameraPosition = "CameraPosition";
 
     private static readonly Type[] VectorTypes = {
-        typeof(Vector2),
         typeof(Vector3),
         typeof(Vector4)
     };
@@ -30,12 +29,9 @@ internal static class ShaderCompilation
         VectorTypes.Concat([
             typeof(Color3),
             typeof(Color4),
-            typeof(Point2),
             typeof(Point3),
-            typeof(Vector2),
             typeof(Vector3),
             typeof(Vector4),
-            typeof(Matrix2),
             typeof(Matrix4)])
         .ToArray();
 
@@ -45,10 +41,8 @@ internal static class ShaderCompilation
         if (type == typeof(float)) return "float";
         if (type == typeof(Color3)) return "vec3";
         if (type == typeof(Color4)) return "vec4";
-        if (type == typeof(Vector2)) return "vec2";
         if (type == typeof(Vector3)) return "vec3";
         if (type == typeof(Vector4)) return "vec4";
-        if (type == typeof(Point2)) return "vec2";
         if (type == typeof(Point3)) return "vec3";
         if (type == typeof(TextureHandle)) return "sampler2D";
         if (type.IsAssignableTo(typeof(LightingBase))) return SanitizeName(type.Name);
@@ -69,11 +63,11 @@ internal static class ShaderCompilation
         var aspects = new List<GlShadingAspect>();
         if (withTextures)
         {
-            var tm = (ColorTextureMaterial) material;
+            var tm = (TextureMaterial) material;
             aspects.Add(new GlNamedTextureShadingAspect($"{tm.GetType().Name}.Handle", (GlTextureHandle)tm.Handle));
         }
 
-        return new GlShading(name, graphic, vertexShader, fragShader, lighting, aspects.ToArray());
+        return new GlLightedShading(name, graphic, vertexShader, fragShader, lighting, aspects.ToArray());
     }
 
     private static string GetVertexShader(bool withNormals, bool withTextures)
@@ -323,14 +317,14 @@ internal static class ShaderCompilation
                     {
                         shader.Append(SanitizeName(name));
                     }
-                    else if (member.DeclaringType == typeof(Color4) && name == nameof(Color4.Color3))
+                    else if (member.DeclaringType!.IsAssignableTo(typeof(IColor)))
                     {
                         CrossCompile(@this, index, memberExpr.Expression!, shader);
-                        shader.Append(".xyz");
+                        shader.Append(".rgb");
                     }
-                    else if (member.DeclaringType!.IsAssignableTo(typeof(Tensor)))
+                    else if (member.DeclaringType!.IsAssignableTo(typeof(ITensor)))
                     {
-                        var tensor = (Tensor)member.DeclaringType.GetField(member.Name)!.GetValue(default)!;
+                        var tensor = (ITensor)member.DeclaringType.GetField(member.Name)!.GetValue(default)!;
                         shader.Append($"{GlSlType(tensor.GetType())}({string.Join(',', tensor.Elements)})");
                     }
                     else
@@ -345,7 +339,7 @@ internal static class ShaderCompilation
                 {
                     var method = methodCall.Method;
                     var methodName = method.Name;
-                    var isTexture = method.DeclaringType!.IsAssignableTo(typeof(ColorTextureMaterial)) && methodName == "Texture";
+                    var isTexture = method.DeclaringType!.IsAssignableTo(typeof(TextureMaterial)) && methodName == "Texture";
                     if (isTexture)
                     {
                         var name = @this.GetType().Name;

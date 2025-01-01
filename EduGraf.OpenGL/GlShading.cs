@@ -1,5 +1,4 @@
-﻿using EduGraf.Lighting;
-using EduGraf.OpenGL.Enums;
+﻿using EduGraf.OpenGL.Enums;
 using EduGraf.OpenGL.GlslParser;
 using EduGraf.OpenGL.GlslParser.Tree;
 using EduGraf.Tensors;
@@ -7,34 +6,23 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
+using System.Threading;
 
 namespace EduGraf.OpenGL;
 
 // This is the generic shading implementation for OpenGL.
 public class GlShading : Shading
 {
-    private readonly LightingBase[] _lighting;
     private readonly Dictionary<string, Direction> _inputs = [];
     private readonly Dictionary<string, ChannelNode> _netChannels = [];
     private readonly uint _handle;
     private readonly List<DeclarationNode> _declarations;
+    private bool _disposed;
 
-    internal readonly GlShadingAspect[] Aspects;
+    [OmitInDocumentation]
+    protected internal GlApi Api { get; }
 
-    // Ditto.
-    public GlApi Api { get; }
-
-
-    // Create a new shading.
-    protected internal GlShading(
-        string name,
-        GlGraphic graphic,
-        string vertexShader,
-        string fragShader)
-        : this(name, graphic, vertexShader, fragShader, [], [])
-    {
-    }
+    public GlShadingAspect[] Aspects { get; } // setting up shading context
 
     // Create a new shading.
     protected internal GlShading(
@@ -42,23 +30,9 @@ public class GlShading : Shading
         GlGraphic graphic,
         string vertexShader,
         string fragShader,
-        params GlShadingAspect[] aspects)
-        : this(name, graphic, vertexShader, fragShader, [], aspects)
-    {
-    }
-
-    // Create a new shading.
-    protected internal GlShading(
-        string name,
-        GlGraphic graphic,
-        string vertexShader,
-        string fragShader,
-        LightingBase[] lighting,
         params GlShadingAspect[] aspects)
         : base(name)
     {
-        _lighting = lighting;
-
         Api = graphic.Api;
         Aspects = aspects;
         foreach (var aspect in aspects) aspect.Shading = this;
@@ -168,7 +142,7 @@ public class GlShading : Shading
                 }
                 else
                 {
-                    _netChannels.Add(channelName, channel);
+                    _netChannels[channelName] = channel;
                 }
             }
         }
@@ -237,38 +211,38 @@ public class GlShading : Shading
     }
 
     // Pass value for name to the shader.
-    protected internal void Set(string name, Coordinate2 value, bool @checked = true)
-    {
-        SetUniform(name, "vec2", @checked);
-        Api.Uniform2(Api.GetUniformLocation(_handle, name), value.X, value.Y);
-    }
-
-    // Pass value for name to the shader.
-    protected internal void Set(string name, Coordinate3 value, bool @checked = true)
+    protected internal void Set(string name, Point3 value, bool @checked = true)
     {
         SetUniform(name, "vec3", @checked);
         Api.Uniform3(Api.GetUniformLocation(_handle, name), value.X, value.Y, value.Z);
     }
 
     // Pass value for name to the shader.
-    protected internal void Set(string name, Coordinate4 value, bool @checked = true)
+    protected internal void Set(string name, Vector3 value, bool @checked = true)
+    {
+        SetUniform(name, "vec3", @checked);
+        Api.Uniform3(Api.GetUniformLocation(_handle, name), value.X, value.Y, value.Z);
+    }
+
+    // Pass value for name to the shader.
+    protected internal void Set(string name, Vector4 value, bool @checked = true)
     {
         SetUniform(name, "vec4", @checked);
         Api.Uniform4(Api.GetUniformLocation(_handle, name), value.X, value.Y, value.Z, value.W);
     }
 
     // Pass value for name to the shader.
-    protected internal void Set(string name, bool transpose, Matrix2 value, bool @checked = true)
+    protected internal void SetMatrix2(string name, bool transpose, float[] elements, bool @checked = true)
     {
         SetUniform(name, "mat2", @checked);
-        Api.UniformMatrix2(Api.GetUniformLocation(_handle, name), transpose, value);
+        Api.UniformMatrix2(Api.GetUniformLocation(_handle, name), transpose, elements);
     }
 
     // Pass value for name to the shader.
-    protected internal void Set(string name, bool transpose, Matrix3 value, bool @checked = true)
+    protected internal void SetMatrix3(string name, bool transpose, float[] elements, bool @checked = true)
     {
         SetUniform(name, "mat3", @checked);
-        Api.UniformMatrix3(Api.GetUniformLocation(_handle, name), transpose, value);
+        Api.UniformMatrix3(Api.GetUniformLocation(_handle, name), transpose, elements);
     }
 
     // Pass value for name to the shader.
@@ -300,57 +274,6 @@ public class GlShading : Shading
     {
         if (assertExists && !_netChannels.ContainsKey(input)) throw new ArgumentException("shader channel not found", nameof(input));
         _inputs.Remove(input);
-    }
-
-    internal void SetParameters()
-    {
-        DoInContext(() =>
-        {
-            int lightsCount = 0;
-            foreach (var lighting in _lighting)
-            {
-                SetUniformParameters(
-                    lighting,
-                    lighting switch
-                    {
-                        Light => lightsCount++,
-                        Material => null,
-                        _ => throw new InvalidOperationException()
-                    });
-            }
-        });
-    }
-
-    private void SetUniformParameters(LightingBase lighting, int? i)
-    {
-        var name = ShaderCompilation.SanitizeName(lighting.GetType().Name, i);
-
-        foreach (var property in ShaderCompilation.GetProperties<DataAttribute>(lighting))
-        {
-            var (fieldObj, fieldType) = GetValueType(lighting, property);
-            string fieldName = $"{name}.{ShaderCompilation.SanitizeName(property.Name)}";
-            if (fieldType.IsAssignableTo(typeof(bool))) Set(fieldName, (bool)fieldObj);
-            else if (fieldType.IsAssignableTo(typeof(int))) Set(fieldName, (int)fieldObj);
-            else if (fieldType.IsAssignableTo(typeof(float))) Set(fieldName, (float)fieldObj);
-            else if (fieldType.IsAssignableTo(typeof(Vector2))) Set(fieldName, (Vector2)fieldObj);
-            else if (fieldType.IsAssignableTo(typeof(Vector3))) Set(fieldName, (Vector3)fieldObj);
-            else if (fieldType.IsAssignableTo(typeof(Vector4))) Set(fieldName, (Vector4)fieldObj);
-            else if (fieldType.IsAssignableTo(typeof(Color3))) Set(fieldName, (Color3)fieldObj);
-            else if (fieldType.IsAssignableTo(typeof(Color4))) Set(fieldName, (Color4)fieldObj);
-            else if (fieldType.IsAssignableTo(typeof(Point2))) Set(fieldName, (Point2)fieldObj);
-            else if (fieldType.IsAssignableTo(typeof(Point3))) Set(fieldName, (Point3)fieldObj);
-            else if (fieldType.IsAssignableTo(typeof(Matrix2))) Set(fieldName, false, (Matrix2)fieldObj);
-            else if (fieldType.IsAssignableTo(typeof(Matrix3))) Set(fieldName, false, (Matrix3)fieldObj);
-            else if (fieldType.IsAssignableTo(typeof(Matrix4))) Set(fieldName, false, (Matrix4)fieldObj);
-            else if (fieldType.IsAssignableTo(typeof(TextureHandle))) Set(fieldName, ((GlTextureHandle)fieldObj).Handle, "sampler2D");
-            else throw new NotSupportedException($"type {fieldType} of {fieldObj} not supported");
-        }
-    }
-
-    private static (object, Type) GetValueType(object obj, PropertyInfo property)
-    {
-        var value = property.GetValue(obj)!;
-        return (value, value.GetType());
     }
 
     internal void CheckInputs()
@@ -386,9 +309,12 @@ public class GlShading : Shading
 
     public override void Dispose()
     {
-        GC.SuppressFinalize(this);
+        if (!Interlocked.Exchange(ref _disposed, true))
+        {
+            GC.SuppressFinalize(this);
 
-        Api.Invoke(() => Api.DeleteProgram(_handle));
-        foreach (var aspect in Aspects) aspect.Dispose();
+            Api.Invoke(() => Api.DeleteProgram(_handle));
+            foreach (var aspect in Aspects) aspect.Dispose();
+        }
     }
 }

@@ -9,13 +9,8 @@ namespace EduGraf.Cameras;
 public class FlyCamera(View view, Projection? projection = default)
     : Camera(view, projection ?? new PerspectiveProjection(0.1f, 100, MathF.PI / 4))
 {
-    private const float FlySpeed = 1f / 10;
-    private const float MoveSensitivity = 1 / 250f;
-
-    private (float x, float y) _mousePosition = (float.NaN, float.NaN);
-
-    // Hande the input event. Pass this to the window inorder to receive the events.
-    public override void Handle(InputEvent e)
+    // See overridden method.
+    public override void Handle(IInputEvent e)
     {
         base.Handle(e);
 
@@ -69,17 +64,12 @@ public class FlyCamera(View view, Projection? projection = default)
 
         if (e is MouseMoveEvent mme)
         {
-            float x = mme.X;
-            float y = mme.Y;
-
-            float deltaX = float.IsNaN(_mousePosition.x) ? 0 : x - _mousePosition.x;
-            float deltaY = float.IsNaN(_mousePosition.y) ? 0 : y - _mousePosition.y;
-            _mousePosition = (x, y);
+            var delta = UpdateMouse((mme.X, mme.Y));
 
             if (PressedButtons.TryGetSingle() == MouseButton.Left)
             {
-                Yaw += deltaX * MoveSensitivity;
-                Pitch = Limit(Pitch - deltaY * MoveSensitivity, MathF.PI / 2);
+                Yaw += delta.x * RotateSensitivity;
+                Pitch = Limit(Pitch - delta.y * MoveSensitivity, MathF.PI / 2);
             }
         }
 

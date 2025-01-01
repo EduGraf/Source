@@ -7,6 +7,16 @@ namespace EduGraf.OpenGL;
 
 internal static class GlTextures
 {
+    internal static readonly GlTextureTarget[] CubeTextureTargets =
+    [
+        GlTextureTarget.GlTextureCubeMapNegativeX,
+        GlTextureTarget.GlTextureCubeMapPositiveX,
+        GlTextureTarget.GlTextureCubeMapNegativeY,
+        GlTextureTarget.GlTextureCubeMapPositiveY,
+        GlTextureTarget.GlTextureCubeMapNegativeZ,
+        GlTextureTarget.GlTextureCubeMapPositiveZ
+    ];
+
     public static uint CreateTexture(GlApi api, int width, int height, GlPixelFormat pixelFormat, GlPixelType pixelType)
     {
         uint texture = api.GenTexture();
@@ -16,6 +26,50 @@ internal static class GlTextures
         api.TextureParameterI(GlTextureTarget.Texture2D, GlTextureParameterName.MagFilter, GlTextureParameter.Linear);
 
         api.TexImage2D(GlTextureTarget.Texture2D, 0, width, height, 0, pixelFormat, pixelType, nint.Zero);
+
+        return texture;
+    }
+
+    public static uint CreateCubeTexture<TPixel>(
+            GlApi api, 
+            Image<TPixel> left,
+            Image<TPixel> right,
+            Image<TPixel> bottom,
+            Image<TPixel> top,
+            Image<TPixel> front,
+            Image<TPixel> back)
+        where TPixel : unmanaged, IPixel<TPixel>
+    {
+        uint texture = api.GenTexture();
+        api.BindTexture(GlTextureTarget.Texture2D, texture);
+
+        var images = new[] { left, right, bottom, top, back, front };
+        for (var i = 0; i < images.Length; i++)
+        {
+            var image = images[i];
+            var pixels = new byte[image.Width * image.Height * 4];
+            image.CopyPixelDataTo(pixels);
+            var handle = GCHandle.Alloc(pixels, GCHandleType.Pinned);
+            try
+            {
+                api.TexImage2D(
+                    CubeTextureTargets[i], 
+                    0, 
+                    image.Width, 
+                    image.Height, 
+                    0, 
+                    GlPixelFormat.Rgba,
+                    GlPixelType.UnsignedByte, 
+                    handle.AddrOfPinnedObject());
+            }
+            finally
+            {
+                handle.Free();
+            }
+        }
+
+        api.TextureParameterI(GlTextureTarget.GlTextureCubeMap, GlTextureParameterName.MinFilter, GlTextureParameter.Linear);
+        api.TextureParameterI(GlTextureTarget.GlTextureCubeMap, GlTextureParameterName.MagFilter, GlTextureParameter.Linear);
 
         return texture;
     }

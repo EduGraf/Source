@@ -4,16 +4,15 @@ using System;
 namespace EduGraf.Tensors;
 
 // This represents a color that can be sent to the GPU.
-public class Color3(float r, float g, float b) : Tensor(r, g, b), IColor, IEquatable<Color3>
+public readonly struct Color3(float r, float g, float b) : ITensor, IColor, IEquatable<Color3>
 {
-    // red in the range of 0..1.
-    [Data] public float R { get; } = r;
+    [Data] public float R { get; } = r; // red in the range of 0..1
 
-    // green in the range of 0..1.
-    [Data] public float G { get; } = g;
+    [Data] public float G { get; } = g; // green in the range of 0..1
 
-    // blue in the range of 0..1.
-    [Data] public float B { get; } = b;
+    [Data] public float B { get; } = b; // blue in the range of 0..1
+
+    public float[] Elements { get; } = [r, g, b]; // see interface property
 
     public static Color3 operator -(Color3 c) => new(-c.R, -c.G, -c.B);
 
@@ -27,19 +26,17 @@ public class Color3(float r, float g, float b) : Tensor(r, g, b), IColor, IEquat
 
     public static Color3 operator -(Color3 l, Color3 r) => new(l.R - r.R, l.G - r.G, l.B - r.B);
 
-    public bool Equals(Color3? other)
-    {
-        if (ReferenceEquals(null, other)) return false;
-        if (ReferenceEquals(this, other)) return true;
-        return R.Equals(other.R) && G.Equals(other.G) && B.Equals(other.B);
-    }
+    public bool Equals(Color3 other) => 
+        R.Equals(other.R) && 
+        G.Equals(other.G) && 
+        B.Equals(other.B);
 
-    public override bool Equals(object? obj)
-    {
-        if (ReferenceEquals(null, obj)) return false;
-        if (ReferenceEquals(this, obj)) return true;
-        return obj.GetType() == GetType() && Equals((Color3)obj);
-    }
+    public override bool Equals(object? obj) => 
+        !ReferenceEquals(null, obj) && 
+        obj.GetType() == GetType() && 
+        Equals((Color3)obj);
 
     public override int GetHashCode() => HashCode.Combine(R, G, B);
+
+    public override string ToString() => $"({R}, {G}, {B})";
 }

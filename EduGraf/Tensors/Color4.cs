@@ -4,25 +4,20 @@ using System;
 namespace EduGraf.Tensors;
 
 // This represents a color with transparency that can be sent to the GPU.
-public class Color4(float r, float g, float b, float a) : Tensor(r, g, b, a), IColor, IEquatable<Color4>
+public readonly struct Color4(float r, float g, float b, float a) : ITensor, IColor, IEquatable<Color4>
 {
-    // red in the range of 0..1.
-    [Data] public float R { get; } = r;
+    [Data] public float R { get; } = r; // red in the range of 0..1
 
-    // green in the range of 0..1.
-    [Data] public float G { get; } = g;
+    [Data] public float G { get; } = g; // green in the range of 0..1
 
-    // blue in the range of 0..1.
-    [Data] public float B { get; } = b;
+    [Data] public float B { get; } = b; // blue in the range of 0..1
 
-    // transparency in the range of 0..1.
-    [Data] public float A { get; } = a;
+    [Data] public float A { get; } = a; // transparency in the range of 0..1
+
+    public float[] Elements { get; } = [r, g, b, a]; // see interface property
 
     // Creates a new instance.
-    public Color4(Color3 c, float a)
-        : this(c.R, c.G, c.B, a)
-    {
-    }
+    public Color4(Color3 c, float a) : this(c.R, c.G, c.B, a) {}
 
     // Strips transparency from the color.
     public Color3 Color3 => new(R, G, B);
@@ -39,19 +34,18 @@ public class Color4(float r, float g, float b, float a) : Tensor(r, g, b, a), IC
 
     public static Color4 operator -(Color4 l, Color4 r) => new(l.R - r.R, l.G - r.G, l.B - r.B, l.A - r.A);
 
-    public bool Equals(Color4? other)
-    {
-        if (ReferenceEquals(null, other)) return false;
-        if (ReferenceEquals(this, other)) return true;
-        return R.Equals(other.R) && G.Equals(other.G) && B.Equals(other.B) && A.Equals(other.A);
-    }
+    public bool Equals(Color4 other) => 
+        R.Equals(other.R) && 
+        G.Equals(other.G) && 
+        B.Equals(other.B) && 
+        A.Equals(other.A);
 
-    public override bool Equals(object? obj)
-    {
-        if (ReferenceEquals(null, obj)) return false;
-        if (ReferenceEquals(this, obj)) return true;
-        return obj.GetType() == GetType() && Equals((Color4)obj);
-    }
+    public override bool Equals(object? obj) => 
+        !ReferenceEquals(null, obj) && 
+        obj.GetType() == GetType() && 
+        Equals((Color4)obj);
 
     public override int GetHashCode() => HashCode.Combine(R, G, B, A);
+
+    public override string ToString() => $"({R}, {G}, {B}, {A})";
 }
